@@ -1,15 +1,18 @@
 'use client';
 
-import { Card, CardContent, Typography, Box, Chip, Avatar, Button, Divider, IconButton, Tooltip } from '@mui/material';
+import React from 'react';
+import { Card, Typography, Space, Tag, Avatar, Button, Divider, Tooltip, Flex, Row, Col } from 'antd';
 import {
-    Visibility as ViewIcon,
-    Stars as TierIcon,
-    AssignmentOutlined as ProjectIcon,
-    CalendarMonth as CalendarIcon
-} from '@mui/icons-material';
+    EyeOutlined,
+    StarFilled,
+    ProjectOutlined,
+    CalendarOutlined
+} from '@ant-design/icons';
 import StatusChip from '@/components/shared/StatusChip';
 import dayjs from 'dayjs';
 import { useRouter } from 'next/navigation';
+
+const { Text, Title } = Typography;
 
 interface ClientCardProps {
     client: any;
@@ -17,9 +20,9 @@ interface ClientCardProps {
 
 const getTierColor = (tier: string) => {
     switch (tier) {
-        case 'enterprise': return { color: '#FFD700', bg: '#FFF9C4', label: 'Gold' };
-        case 'premium': return { color: '#9C27B0', bg: '#F3E5F5', label: 'Purple' };
-        default: return { color: '#757575', bg: '#F5F5F5', label: 'Standard' };
+        case 'enterprise': return { color: '#faad14', bg: '#fffbe6' };
+        case 'premium': return { color: '#722ed1', bg: '#f9f0ff' };
+        default: return { color: '#8c8c8c', bg: '#f5f5f5' };
     }
 };
 
@@ -30,103 +33,99 @@ export default function ClientCard({ client }: ClientCardProps) {
     const isExpiringSoon = contractEnd && contractEnd.diff(dayjs(), 'days') <= 30;
 
     return (
-        <Card sx={{
-            borderRadius: 3,
-            boxShadow: '0 4px 15px rgba(0,0,0,0.05)',
-            border: '1px solid',
-            borderColor: 'grey.100',
-            transition: 'transform 0.2s, box-shadow 0.2s',
-            '&:hover': {
-                transform: 'translateY(-4px)',
-                boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
-            }
-        }}>
-            <CardContent sx={{ p: 3 }}>
-                <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 2 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <Avatar
-                            src={client.logo}
-                            sx={{ width: 48, height: 48, borderRadius: 2, bgcolor: 'primary.light' }}
-                            variant="rounded"
-                        >
-                            {client.businessName.charAt(0)}
-                        </Avatar>
-                        <Box>
-                            <Typography variant="subtitle1" sx={{ fontWeight: 800, lineHeight: 1.2 }}>
-                                {client.businessName}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary">
-                                {client.contactPerson}
-                            </Typography>
-                        </Box>
-                    </Box>
-                    <StatusChip status={client.status} />
-                </Box>
-
-                <Box sx={{ display: 'flex', gap: 1, mb: 2.5 }}>
-                    <Chip
-                        icon={<TierIcon sx={{ fontSize: '1rem !important', color: tierStyle.color }} />}
-                        label={client.tier}
-                        size="small"
-                        sx={{
-                            textTransform: 'capitalize',
-                            fontWeight: 700,
-                            bgcolor: tierStyle.bg,
-                            color: tierStyle.color,
-                            height: 24
-                        }}
-                    />
-                    <Chip
-                        icon={<ProjectIcon sx={{ fontSize: '1rem !important' }} />}
-                        label={`${client.activeProjectsCount || 0} Active`}
-                        size="small"
-                        color="primary"
-                        variant="outlined"
-                        sx={{ fontWeight: 700, height: 24 }}
-                    />
-                </Box>
-
-                <Divider sx={{ mb: 2, opacity: 0.6 }} />
-
-                <Grid container spacing={2} sx={{ mb: 2 }}>
-                    <Grid item xs={6}>
-                        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, display: 'block' }}>RETAINER</Typography>
-                        <Typography variant="body2" sx={{ fontWeight: 800 }}>₹{client.monthlyRetainerValue?.toLocaleString('en-IN')}</Typography>
-                    </Grid>
-                    <Grid item xs={6}>
-                        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, display: 'block' }}>EXPIRY</Typography>
-                        <Typography variant="body2" sx={{ fontWeight: 800, color: isExpiringSoon ? 'error.main' : 'text.primary' }}>
-                            {contractEnd ? contractEnd.format('DD MMM, YYYY') : 'Lifetime'}
-                        </Typography>
-                    </Grid>
-                </Grid>
-
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 'auto' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Tooltip title={`Manager: ${client.assignedManager?.name}`}>
-                            <Avatar
-                                src={client.assignedManager?.avatar}
-                                sx={{ width: 24, height: 24 }}
-                            >
-                                {client.assignedManager?.name?.charAt(0)}
-                            </Avatar>
-                        </Tooltip>
-                        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
-                            {client.assignedManager?.name?.split(' ')[0]}
-                        </Typography>
-                    </Box>
-                    <Button
-                        size="small"
-                        variant="soft"
-                        startIcon={<ViewIcon />}
-                        onClick={() => router.push(`/clients/${client._id}`)}
+        <Card
+            hoverable
+            style={{ 
+                borderRadius: 12, 
+                overflow: 'hidden',
+                boxShadow: '0 4px 15px rgba(0,0,0,0.05)',
+                height: '100%'
+            }}
+            styles={{
+                body: { padding: '24px' }
+            }}
+        >
+            <Flex justify="space-between" align="flex-start" style={{ marginBottom: 16 }}>
+                <Flex gap={12} align="center">
+                    <Avatar 
+                        src={client.logo} 
+                        shape="square" 
+                        size={48} 
+                        style={{ backgroundColor: '#6C63FF', borderRadius: 8 }}
                     >
-                        View
-                    </Button>
-                </Box>
-            </CardContent>
+                        {client.businessName.charAt(0)}
+                    </Avatar>
+                    <div>
+                        <Title level={5} style={{ margin: 0, fontSize: 16, fontWeight: 800 }}>
+                            {client.businessName}
+                        </Title>
+                        <Text type="secondary" style={{ fontSize: 12 }}>
+                            {client.contactPerson}
+                        </Text>
+                    </div>
+                </Flex>
+                <StatusChip status={client.status} />
+            </Flex>
+
+            <Flex gap={8} style={{ marginBottom: 20 }}>
+                <Tag 
+                    icon={<StarFilled style={{ color: tierStyle.color }} />} 
+                    color={tierStyle.bg}
+                    style={{ color: tierStyle.color, fontWeight: 700, textTransform: 'capitalize', border: 'none' }}
+                >
+                    {client.tier}
+                </Tag>
+                <Tag 
+                    icon={<ProjectOutlined />} 
+                    color="blue"
+                    style={{ fontWeight: 700 }}
+                >
+                    {client.activeProjectsCount || 0} Active
+                </Tag>
+            </Flex>
+
+            <Divider style={{ margin: '0 0 16px 0' }} />
+
+            <Row gutter={16} style={{ marginBottom: 20 }}>
+                <Col span={12}>
+                    <Text type="secondary" style={{ fontSize: 10, fontWeight: 700, display: 'block', textTransform: 'uppercase' }}>
+                        RETAINER
+                    </Text>
+                    <Text strong style={{ fontSize: 14 }}>
+                        ₹{client.monthlyRetainerValue?.toLocaleString('en-IN')}
+                    </Text>
+                </Col>
+                <Col span={12}>
+                    <Text type="secondary" style={{ fontSize: 10, fontWeight: 700, display: 'block', textTransform: 'uppercase' }}>
+                        EXPIRY
+                    </Text>
+                    <Text strong style={{ fontSize: 14, color: isExpiringSoon ? '#ff4d4f' : 'inherit' }}>
+                        {contractEnd ? contractEnd.format('DD MMM, YYYY') : 'Lifetime'}
+                    </Text>
+                </Col>
+            </Row>
+
+            <Flex justify="space-between" align="center">
+                <Flex align="center" gap={8}>
+                    <Tooltip title={`Manager: ${client.assignedManager?.name}`}>
+                        <Avatar size={24} src={client.assignedManager?.avatar}>
+                            {client.assignedManager?.name?.charAt(0)}
+                        </Avatar>
+                    </Tooltip>
+                    <Text type="secondary" style={{ fontSize: 12, fontWeight: 600 }}>
+                        {client.assignedManager?.name?.split(' ')[0]}
+                    </Text>
+                </Flex>
+                <Button 
+                    type="primary" 
+                    ghost
+                    size="small" 
+                    icon={<EyeOutlined />}
+                    onClick={() => router.push(`/clients/${client._id}`)}
+                >
+                    View
+                </Button>
+            </Flex>
         </Card>
     );
 }
-
-import { Grid } from '@mui/material';

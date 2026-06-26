@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useEffect, useCallback, use } from 'react';
-import { Box, Typography, Button, IconButton, CircularProgress } from '@mui/material';
-import { ArrowBack as BackIcon } from '@mui/icons-material';
+import { useState, useEffect, useCallback } from 'react';
+import { Button, Typography, Space, Flex, Spin, Result } from 'antd';
+import { ArrowLeftOutlined } from '@ant-design/icons';
 import LeadDetailView from '@/components/leads/LeadDetailView';
 import ConvertToClientDialog from '@/components/leads/ConvertToClientDialog';
 import apiClient from '@/lib/apiClient';
 import { useParams, useRouter } from 'next/navigation';
+
+const { Title, Text } = Typography;
 
 export default function LeadDetailPage() {
     const params = useParams();
@@ -66,29 +68,37 @@ export default function LeadDetailPage() {
 
     if (loading && !lead) {
         return (
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
-                <CircularProgress />
-            </Box>
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+                <Spin size="large" description="Loading lead details..." />
+            </div>
         );
     }
 
     if (!lead) {
         return (
-            <Box sx={{ py: 10, textAlign: 'center' }}>
-                <Typography color="error">Lead not found.</Typography>
-                <Button sx={{ mt: 2 }} onClick={() => router.push('/leads')}>Back to Leads</Button>
-            </Box>
+            <Result
+                status="404"
+                title="Lead Not Found"
+                subTitle="Sorry, the lead you are looking for does not exist."
+                extra={
+                    <Button type="primary" onClick={() => router.push('/leads')}>
+                        Back to Leads
+                    </Button>
+                }
+            />
         );
     }
 
     return (
-        <Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 4 }}>
-                <IconButton onClick={() => router.push('/leads')}>
-                    <BackIcon />
-                </IconButton>
-                <Typography variant="h5" sx={{ fontWeight: 800 }}>Lead Details</Typography>
-            </Box>
+        <div>
+            <Flex align="center" gap={16} style={{ marginBottom: 32 }}>
+                <Button 
+                    shape="circle" 
+                    icon={<ArrowLeftOutlined />} 
+                    onClick={() => router.push('/leads')} 
+                />
+                <Title level={3} style={{ margin: 0, fontWeight: 800 }}>Lead Details</Title>
+            </Flex>
 
             <LeadDetailView
                 lead={lead}
@@ -103,6 +113,6 @@ export default function LeadDetailPage() {
                 lead={lead}
                 loading={loading}
             />
-        </Box>
+        </div>
     );
 }

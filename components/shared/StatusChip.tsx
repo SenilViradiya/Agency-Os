@@ -1,45 +1,51 @@
-import { Chip } from '@mui/material';
+import { Tag } from 'antd';
+import { 
+    CheckCircleOutlined, 
+    SyncOutlined, 
+    CloseCircleOutlined, 
+    ExclamationCircleOutlined,
+    ClockCircleOutlined,
+    MinusCircleOutlined 
+} from '@ant-design/icons';
 
 interface StatusChipProps {
     status: string;
 }
 
 export default function StatusChip({ status }: StatusChipProps) {
-    const getColor = () => {
-        switch (status.toLowerCase()) {
+    const getTagProps = () => {
+        const s = status.toLowerCase();
+        switch (s) {
             case 'active':
             case 'won':
             case 'completed':
             case 'qualified':
-                return 'success';
+                return { color: 'success', icon: <CheckCircleOutlined /> };
             case 'inactive':
             case 'lost':
             case 'cancelled':
             case 'churned':
-                return 'error';
+                return { color: 'error', icon: <CloseCircleOutlined /> };
             case 'suspended':
             case 'on_hold':
             case 'negotiation':
-                return 'warning';
+                return { color: 'warning', icon: <ExclamationCircleOutlined /> };
             case 'new':
             case 'planning':
             case 'proposal_sent':
             case 'contacted':
-                return 'primary';
+                return { color: 'processing', icon: <SyncOutlined spin /> };
             default:
-                return 'default';
+                return { color: 'default', icon: <MinusCircleOutlined /> };
         }
     };
 
+    const { color, icon } = getTagProps();
     const label = status.replace(/_/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 
     return (
-        <Chip
-            label={label}
-            color={getColor() as any}
-            size="small"
-            sx={{ fontWeight: 600, borderRadius: '6px' }}
-        />
+        <Tag icon={icon} color={color} style={{ fontWeight: 600, borderRadius: '4px' }}>
+            {label}
+        </Tag>
     );
 }
-

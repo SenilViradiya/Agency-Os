@@ -2,13 +2,26 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button, Box, TextField, InputAdornment, MenuItem } from '@mui/material';
-import { Add as AddIcon, Search as SearchIcon } from '@mui/icons-material';
+import { 
+    Button, 
+    Input, 
+    Select, 
+    Space, 
+    Typography, 
+    Flex, 
+    Modal 
+} from 'antd';
+import { 
+    PlusOutlined, 
+    SearchOutlined 
+} from '@ant-design/icons';
 import PageHeader from '@/components/shared/PageHeader';
 import UserTable from '@/components/users/UserTable';
 import UserDrawer from '@/components/users/UserDrawer';
-import ConfirmDialog from '@/components/shared/ConfirmDialog';
 import apiClient from '@/lib/apiClient';
+
+const { Text } = Typography;
+const { Option } = Select;
 
 export default function UsersPage() {
     const router = useRouter();
@@ -17,7 +30,6 @@ export default function UsersPage() {
     const [loading, setLoading] = useState(true);
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState<any>(null);
-    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [actionLoading, setActionLoading] = useState(false);
 
     // Filters
@@ -56,10 +68,8 @@ export default function UsersPage() {
         fetchRoles();
     }, [roleFilter, statusFilter]);
 
-    const handleSearchKeyPress = (e: any) => {
-        if (e.key === 'Enter') {
-            fetchUsers();
-        }
+    const handleSearch = () => {
+        fetchUsers();
     };
 
     const handleAddUser = () => {
@@ -73,8 +83,21 @@ export default function UsersPage() {
     };
 
     const handleDeleteClick = (user: any) => {
-        setSelectedUser(user);
-        setDeleteDialogOpen(true);
+        Modal.confirm({
+            title: 'Confirm Deactivation',
+            content: `Are you sure you want to deactivate ${user.name}? They will no longer be able to log in.`,
+            okText: 'Deactivate',
+            okType: 'danger',
+            cancelText: 'Cancel',
+            onOk: async () => {
+                try {
+                    await apiClient.delete(`/users/${user._id}`);
+                    fetchUsers();
+                } catch (error) {
+                    console.error('Failed to delete user:', error);
+                }
+            }
+        });
     };
 
     const handleFormSubmit = async (data: any) => {
@@ -94,88 +117,69 @@ export default function UsersPage() {
         }
     };
 
-    const confirmDelete = async () => {
-        setActionLoading(true);
-        try {
-            await apiClient.delete(`/users/${selectedUser._id}`);
-            setDeleteDialogOpen(false);
-            fetchUsers();
-        } catch (error) {
-            console.error('Failed to delete user:', error);
-        } finally {
-            setActionLoading(false);
-        }
-    };
-
     return (
-        <>
-            <PageHeader
-                title="Users Management"
-                subtitle="Manage agency members, their roles and access levels."
-                action={
-                    <Button
-                        variant="contained"
-                        startIcon={<AddIcon />}
-                        onClick={() => router.push('/users/new')}
-                    >
-                        Add User
-                    </Button>
-                }
-            />
-
-            <Box sx={{ mb: 4, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-                <TextField
-                    placeholder="Search name or email..."
-                    size="small"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    onKeyDown={handleSearchKeyPress}
-                    sx={{ flexGrow: 1, maxWidth: 400 }}
-                    slotProps={{
-                        input: {
-                            startAdornment: (
-                                <InputAdornment position="start">
-                                    <SearchIcon fontSize="small" />
-                                </InputAdornment>
-                            ),
-                        }
-                    }}
+        <div>
+            <Flex justify="space-between" align="flex-start" style={{ marginBottom: 32 }}>
+                <PageHeader
+                    title="Users Management"
+                    subtitle="Manage agency members, their roles and access levels."
                 />
-                <TextField
-                    select
-                    label="Role"
-                    size="small"
-                    value={roleFilter}
-                    onChange={(e) => setRoleFilter(e.target.value)}
-                    sx={{ minWidth: 150 }}
+                <Button
+                    type="primary"
+                    size="large"
+                    icon={<PlusOutlined />}
+                    onClick={handleAddUser}
+                    style={{ height: 45, fontWeight: 600, borderRadius: 8 }}
                 >
-                    <MenuItem value="">All Roles</MenuItem>
-                    {roles.map((role: any) => (
-                        <MenuItem key={role._id} value={role._id}>{role.name}</MenuItem>
-                    ))}
-                </TextField>
-                <TextField
-                    select
-                    label="Status"
-                    size="small"
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                    sx={{ minWidth: 150 }}
-                >
-                    <MenuItem value="">All Status</MenuItem>
-                    <MenuItem value="active">Active</MenuItem>
-                    <MenuItem value="inactive">Inactive</MenuItem>
-                    <MenuItem value="suspended">Suspended</MenuItem>
-                </TextField>
-                <Button variant="outlined" onClick={fetchUsers}>Apply</Button>
-            </Box>
+                    Add User
+                </Button>
+            </Flex>
+
+            <Flex justify="space-between" align="center" style={{ marginBottom: 24 }} wrap="wrap" gap={16}>
+                <Space size="middle">
+                    <Input
+                        placeholder="Search name or email..."
+                        prefix={<SearchOutlined style={{ color: '#bfbfbf' }} />}
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        onPressEnter={handleSearch}
+                        style={{ width: 300, borderRadius: 8 }}
+                        size="large"
+                    />
+                    <Select
+                        placeholder="Filter by Role"
+                        value={roleFilter || undefined}
+                        onChange={(val) => setRoleFilter(val || '')}
+                        style={{ width: 160 }}
+                        size="large"
+                        allowClear
+                    >
+                        {roles.map((role: any) => (
+                            <Option key={role._id} value={role._id}>{role.name}</Option>
+                        ))}
+                    </Select>
+                    <Select
+                        placeholder="Status"
+                        value={statusFilter || undefined}
+                        onChange={(val) => setStatusFilter(val || '')}
+                        style={{ width: 140 }}
+                        size="large"
+                        allowClear
+                    >
+                        <Option value="active">Active</Option>
+                        <Option value="inactive">Inactive</Option>
+                        <Option value="suspended">Suspended</Option>
+                    </Select>
+                </Space>
+                <Button size="large" onClick={fetchUsers}>Apply Filters</Button>
+            </Flex>
 
             <UserTable
                 users={users}
                 loading={loading}
                 onEdit={handleEditUser}
                 onDelete={handleDeleteClick}
-                onDeactivate={handleDeleteClick} // Same for now: soft delete/inactive
+                onDeactivate={handleDeleteClick}
             />
 
             <UserDrawer
@@ -186,15 +190,6 @@ export default function UsersPage() {
                 onSubmit={handleFormSubmit}
                 loading={actionLoading}
             />
-
-            <ConfirmDialog
-                open={deleteDialogOpen}
-                title="Confirm Deactivation"
-                message={`Are you sure you want to deactivate ${selectedUser?.name}? They will no longer be able to log in.`}
-                onConfirm={confirmDelete}
-                onCancel={() => setDeleteDialogOpen(false)}
-                loading={actionLoading}
-            />
-        </>
+        </div>
     );
 }

@@ -7,9 +7,10 @@ import { hasPermission } from '@/lib/auth';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     if (!session?.user) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
@@ -22,7 +23,7 @@ export async function GET(
 
     await dbConnect();
     const client = await Client.findOne({
-      _id: params.id,
+      _id: id,
       organizationId: (user as any).organizationId,
     })
       .populate('assignedManager', 'name email avatar')
@@ -49,9 +50,10 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     if (!session?.user) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
@@ -67,7 +69,7 @@ export async function PUT(
     const organizationId = (user as any).organizationId;
 
     const client = await Client.findOneAndUpdate(
-      { _id: params.id, organizationId },
+      { _id: id, organizationId },
       body,
       { new: true }
     );
@@ -84,9 +86,10 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     if (!session?.user) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
@@ -102,7 +105,7 @@ export async function DELETE(
 
     // Block if client has active projects
     const activeProjects = await Project.countDocuments({ 
-      clientId: params.id, 
+      clientId: id, 
       status: 'active' 
     });
 
@@ -113,7 +116,7 @@ export async function DELETE(
       }, { status: 400 });
     }
 
-    const client = await Client.findOne({ _id: params.id, organizationId });
+    const client = await Client.findOne({ _id: id, organizationId });
     if (!client) {
       return NextResponse.json({ success: false, error: 'Client not found' }, { status: 404 });
     }

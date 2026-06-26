@@ -2,12 +2,11 @@
 
 import {
     Drawer,
-    Box,
-    Typography,
-    IconButton,
-    Divider,
-} from '@mui/material';
-import { Close as CloseIcon } from '@mui/icons-material';
+    Button,
+    Space,
+} from 'antd';
+import { CloseOutlined } from '@ant-design/icons';
+import { useEffect } from 'react';
 import UserForm from './UserForm';
 
 interface UserDrawerProps {
@@ -27,35 +26,26 @@ export default function UserDrawer({
     onSubmit,
     loading,
 }: UserDrawerProps) {
+    const isEdit = !!initialData;
+
     return (
         <Drawer
-            anchor="right"
-            open={open}
+            title={isEdit ? 'Edit User' : 'Add New User'}
+            placement="right"
             onClose={onClose}
-            slotProps={{
-                paper: {
-                    sx: { width: { xs: '100%', sm: 500 } }
-                }
-            }}
+            open={open}
+            size="default"
+            extra={<Button type="text" icon={<CloseOutlined />} onClick={onClose} />}
         >
-            <Box sx={{ p: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                    {initialData ? 'Edit User' : 'Add New User'}
-                </Typography>
-                <IconButton onClick={onClose} size="small">
-                    <CloseIcon />
-                </IconButton>
-            </Box>
-            <Divider />
-            <Box sx={{ p: 3 }}>
+            <div style={{ padding: '0 24px' }}>
                 <UserForm
                     initialData={initialData}
                     roles={roles}
                     onSubmit={onSubmit}
                     loading={loading}
-                    isEdit={!!initialData}
+                    isEdit={isEdit}
                 />
-            </Box>
+            </div>
         </Drawer>
     );
 }

@@ -1,11 +1,5 @@
-import {
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogContentText,
-    DialogActions,
-    Button,
-} from '@mui/material';
+import { Modal } from 'antd';
+import { ExclamationCircleFilled } from '@ant-design/icons';
 
 interface ConfirmDialogProps {
     open: boolean;
@@ -25,19 +19,22 @@ export default function ConfirmDialog({
     loading = false,
 }: ConfirmDialogProps) {
     return (
-        <Dialog open={open} onClose={onCancel}>
-            <DialogTitle>{title}</DialogTitle>
-            <DialogContent>
-                <DialogContentText>{message}</DialogContentText>
-            </DialogContent>
-            <DialogActions sx={{ p: 2, pt: 0 }}>
-                <Button onClick={onCancel} disabled={loading}>
-                    Cancel
-                </Button>
-                <Button onClick={onConfirm} variant="contained" color="error" disabled={loading}>
-                    {loading ? 'Processing...' : 'Confirm'}
-                </Button>
-            </DialogActions>
-        </Dialog>
+        <Modal
+            title={
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <ExclamationCircleFilled style={{ color: '#ff4d4f' }} />
+                    <span>{title}</span>
+                </div>
+            }
+            open={open}
+            onOk={onConfirm}
+            onCancel={onCancel}
+            confirmLoading={loading}
+            okText="Confirm"
+            okButtonProps={{ danger: true, size: 'large' }}
+            cancelButtonProps={{ size: 'large' }}
+        >
+            <p style={{ fontSize: 16, margin: '16px 0' }}>{message}</p>
+        </Modal>
     );
 }

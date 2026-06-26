@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Box, Paper, Button, Typography, CircularProgress } from '@mui/material';
-import { ArrowBack as BackIcon } from '@mui/icons-material';
+import { Button, Card, Flex, Spin, Typography } from 'antd';
+import { ArrowLeftOutlined } from '@ant-design/icons';
 import PageHeader from '@/components/shared/PageHeader';
 import UserForm from '@/components/users/UserForm';
 import apiClient from '@/lib/apiClient';
+
+const { Title, Text } = Typography;
 
 export default function NewUserPage() {
     const router = useRouter();
@@ -37,6 +39,7 @@ export default function NewUserPage() {
             }
         } catch (error: any) {
             console.error('Failed to create user:', error);
+            // We could use antd message.error here
             alert(error.response?.data?.error || 'Failed to create user');
         } finally {
             setSubmitting(false);
@@ -45,34 +48,35 @@ export default function NewUserPage() {
 
     if (loading) {
         return (
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}>
-                <CircularProgress />
-            </Box>
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: 100 }}>
+                <Spin size="large" description="Loading configuration..." />
+            </div>
         );
     }
 
     return (
-        <Box sx={{ maxWidth: 800, mx: 'auto' }}>
-            <Button 
-                startIcon={<BackIcon />} 
-                onClick={() => router.back()} 
-                sx={{ mb: 2 }}
+        <div style={{ maxWidth: 800, margin: '0 auto' }}>
+            <Button
+                type="text"
+                icon={<ArrowLeftOutlined />}
+                onClick={() => router.back()}
+                style={{ marginBottom: 16 }}
             >
                 Back to Users
             </Button>
-            
-            <PageHeader 
-                title="Create New User" 
+
+            <PageHeader
+                title="Create New User"
                 subtitle="Fill in the details to add a new member to your agency."
             />
 
-            <Paper sx={{ p: 4, mt: 2, borderRadius: 3 }}>
-                <UserForm 
-                    roles={roles} 
-                    onSubmit={handleSubmit} 
-                    loading={submitting} 
+            <Card style={{ marginTop: 24, borderRadius: 12, boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
+                <UserForm
+                    roles={roles}
+                    onSubmit={handleSubmit}
+                    loading={submitting}
                 />
-            </Paper>
-        </Box>
+            </Card>
+        </div>
     );
 }

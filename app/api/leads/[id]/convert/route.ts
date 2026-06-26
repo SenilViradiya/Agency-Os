@@ -7,9 +7,10 @@ import { hasPermission } from '@/lib/auth';
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     if (!session?.user) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
@@ -24,7 +25,7 @@ export async function POST(
     const body = await req.json();
     const organizationId = (user as any).organizationId;
 
-    const lead = await Lead.findOne({ _id: params.id, organizationId });
+    const lead = await Lead.findOne({ _id: id, organizationId });
     if (!lead) {
       return NextResponse.json({ success: false, error: 'Lead not found' }, { status: 404 });
     }

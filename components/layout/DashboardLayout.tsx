@@ -1,40 +1,46 @@
 'use client';
 
-import { useState } from 'react';
-import { Box, useMediaQuery, useTheme } from '@mui/material';
+import { useState, useEffect } from 'react';
+import { Layout } from 'antd';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
-import { SessionProvider } from 'next-auth/react';
+
+const { Content } = Layout;
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-    const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-    const [open, setOpen] = useState(!isMobile);
+    const [collapsed, setCollapsed] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
 
-    const toggleDrawer = () => {
-        setOpen(!open);
+    useEffect(() => {
+        const checkMobile = () => {
+            const mobile = window.innerWidth < 768;
+            setIsMobile(mobile);
+            if (mobile) setCollapsed(true);
+        };
+        
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+
+    const toggleCollapsed = () => {
+        setCollapsed(!collapsed);
     };
 
     return (
-        <SessionProvider>
-            <Box sx={{ display: 'flex' }}>
-                <Sidebar open={open} toggleDrawer={toggleDrawer} />
-                <Topbar toggleDrawer={toggleDrawer} />
-                <Box
-                    component="main"
-                    sx={{
-                        flexGrow: 1,
-                        p: { xs: 2, md: 4 },
-                        width: { sm: `calc(100% - ${open ? 260 : 70}px)` },
-                        mt: { xs: 8, md: 0 },
-                        backgroundColor: 'background.default',
-                        minHeight: '100vh',
-                        transition: 'width 0.3s, margin-left 0.3s',
-                    }}
-                >
+        <Layout style={{ minHeight: '100vh' }}>
+            <Sidebar collapsed={collapsed} onCollapse={setCollapsed} isMobile={isMobile} />
+            <Layout>
+                <Topbar collapsed={collapsed} onToggle={toggleCollapsed} />
+                <Content style={{ 
+                    padding: isMobile ? '16px' : '24px 32px',
+                    margin: 0,
+                    minHeight: 280,
+                    transition: 'all 0.2s'
+                }}>
                     {children}
-                </Box>
-            </Box>
-        </SessionProvider>
+                </Content>
+            </Layout>
+        </Layout>
     );
 }

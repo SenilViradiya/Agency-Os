@@ -1,30 +1,42 @@
-import { Chip } from '@mui/material';
+import { Tag } from 'antd';
+import { 
+    ArrowUpOutlined, 
+    LineOutlined, 
+    ArrowDownOutlined, 
+    QuestionCircleOutlined 
+} from '@ant-design/icons';
 
 interface PriorityChipProps {
     priority: 'low' | 'medium' | 'high' | string;
 }
 
 export default function PriorityChip({ priority }: PriorityChipProps) {
-    const getColor = () => {
+    const getProps = () => {
         switch (priority.toLowerCase()) {
             case 'high':
-                return 'error';
+                return { color: 'red', icon: <ArrowUpOutlined /> };
             case 'medium':
-                return 'warning';
+                return { color: 'orange', icon: <LineOutlined /> };
             case 'low':
-                return 'info';
+                return { color: 'blue', icon: <ArrowDownOutlined /> };
             default:
-                return 'default';
+                return { color: 'default', icon: <QuestionCircleOutlined /> };
         }
     };
 
+    const { color, icon } = getProps();
+
     return (
-        <Chip
-            label={priority.charAt(0).toUpperCase() + priority.slice(1)}
-            color={getColor() as any}
-            size="small"
-            variant="outlined"
-            sx={{ fontWeight: 700, borderRadius: '6px', borderWidth: 2 }}
-        />
+        <Tag 
+            color={color} 
+            icon={icon}
+            style={{ 
+                fontWeight: 700, 
+                borderRadius: '4px',
+                borderWidth: 1 
+            }}
+        >
+            {priority.charAt(0).toUpperCase() + priority.slice(1)}
+        </Tag>
     );
 }

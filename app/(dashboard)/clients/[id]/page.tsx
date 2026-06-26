@@ -1,12 +1,14 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Box, Typography, Button, IconButton, CircularProgress } from '@mui/material';
-import { ArrowBack as BackIcon } from '@mui/icons-material';
+import { Button, Typography, Space, Flex, Spin, Result } from 'antd';
+import { ArrowLeftOutlined } from '@ant-design/icons';
 import ClientDetailView from '@/components/clients/ClientDetailView';
 import ClientDrawer from '@/components/clients/ClientDrawer';
 import apiClient from '@/lib/apiClient';
 import { useParams, useRouter } from 'next/navigation';
+
+const { Title, Text } = Typography;
 
 export default function ClientDetailPage() {
     const params = useParams();
@@ -52,29 +54,37 @@ export default function ClientDetailPage() {
 
     if (loading && !client) {
         return (
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
-                <CircularProgress />
-            </Box>
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+                <Spin size="large" description="Loading client details..." />
+            </div>
         );
     }
 
     if (!client) {
         return (
-            <Box sx={{ py: 10, textAlign: 'center' }}>
-                <Typography color="error">Client not found.</Typography>
-                <Button sx={{ mt: 2 }} onClick={() => router.push('/clients')}>Back to Clients</Button>
-            </Box>
+            <Result
+                status="404"
+                title="Client Not Found"
+                subTitle="Sorry, the client you are looking for does not exist."
+                extra={
+                    <Button type="primary" onClick={() => router.push('/clients')}>
+                        Back to Clients
+                    </Button>
+                }
+            />
         );
     }
 
     return (
-        <Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 4 }}>
-                <IconButton onClick={() => router.push('/clients')}>
-                    <BackIcon />
-                </IconButton>
-                <Typography variant="h5" sx={{ fontWeight: 800 }}>Client Details</Typography>
-            </Box>
+        <div>
+            <Flex align="center" gap={16} style={{ marginBottom: 32 }}>
+                <Button 
+                    shape="circle" 
+                    icon={<ArrowLeftOutlined />} 
+                    onClick={() => router.push('/clients')} 
+                />
+                <Title level={3} style={{ margin: 0, fontWeight: 800 }}>Client Details</Title>
+            </Flex>
 
             <ClientDetailView 
                 client={client} 
@@ -88,6 +98,6 @@ export default function ClientDetailPage() {
                 initialData={client}
                 loading={loading}
             />
-        </Box>
+        </div>
     );
 }

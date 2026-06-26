@@ -1,28 +1,19 @@
 'use client';
 
+import React from 'react';
+import { Table, Typography, Space, Button, Avatar, Progress, Tooltip, Flex } from 'antd';
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    Paper,
-    IconButton,
-    Typography,
-    Box,
-    Avatar,
-    LinearProgress,
-} from '@mui/material';
-import {
-    Visibility as ViewIcon,
-    Edit as EditIcon,
-    Delete as DeleteIcon,
-} from '@mui/icons-material';
+    EyeOutlined,
+    EditOutlined,
+    DeleteOutlined,
+} from '@ant-design/icons';
 import StatusChip from '@/components/shared/StatusChip';
 import PriorityChip from '@/components/shared/PriorityChip';
 import dayjs from 'dayjs';
 import { useRouter } from 'next/navigation';
+import type { ColumnsType } from 'antd/es/table';
+
+const { Text } = Typography;
 
 interface ProjectTableProps {
     projects: any[];
@@ -33,89 +24,118 @@ interface ProjectTableProps {
 export default function ProjectTable({ projects, onEdit, onDelete }: ProjectTableProps) {
     const router = useRouter();
 
+    const columns: ColumnsType<any> = [
+        {
+            title: 'Project',
+            key: 'project',
+            render: (_, record) => (
+                <div>
+                    <Text strong style={{ display: 'block' }}>{record.name}</Text>
+                    <Text type="secondary" style={{ fontSize: 12 }}>
+                        {record.projectNumber} • <span style={{ textTransform: 'capitalize' }}>{record.type}</span>
+                    </Text>
+                </div>
+            ),
+        },
+        {
+            title: 'Client',
+            dataIndex: ['clientId', 'businessName'],
+            key: 'client',
+            render: (text) => <Text>{text}</Text>,
+        },
+        {
+            title: 'Status',
+            dataIndex: 'status',
+            key: 'status',
+            render: (status) => <StatusChip status={status} />,
+        },
+        {
+            title: 'Priority',
+            dataIndex: 'priority',
+            key: 'priority',
+            render: (priority) => <PriorityChip priority={priority} />,
+        },
+        {
+            title: 'Progress',
+            key: 'progress',
+            width: 200,
+            render: (_, record) => (
+                <div>
+                    <Flex align="center" gap={8} style={{ marginBottom: 4 }}>
+                        <Progress 
+                            percent={record.completionPercentage} 
+                            size="small" 
+                            showInfo={false} 
+                            strokeColor="#6C63FF"
+                        />
+                        <Text strong style={{ fontSize: 12, minWidth: 35 }}>{record.completionPercentage}%</Text>
+                    </Flex>
+                    <Text type="secondary" style={{ fontSize: 11 }}>
+                        {record.completedTasks}/{record.totalTasks} Tasks
+                    </Text>
+                </div>
+            ),
+        },
+        {
+            title: 'Deadline',
+            dataIndex: 'deadline',
+            key: 'deadline',
+            render: (date) => (
+                <Text type={dayjs(date).isBefore(dayjs()) ? 'danger' : undefined}>
+                    {date ? dayjs(date).format('DD MMM YYYY') : '-'}
+                </Text>
+            ),
+        },
+        {
+            title: 'Manager',
+            dataIndex: 'projectManager',
+            key: 'manager',
+            render: (user) => (
+                <Tooltip title={user?.name}>
+                    <Avatar size="small" src={user?.avatar}>{user?.name?.charAt(0)}</Avatar>
+                </Tooltip>
+            ),
+        },
+        {
+            title: 'Actions',
+            key: 'actions',
+            align: 'right',
+            render: (_, record) => (
+                <Space size="small">
+                    <Button 
+                        type="text" 
+                        icon={<EyeOutlined />} 
+                        onClick={() => router.push(`/projects/${record._id}`)} 
+                    />
+                    <Button 
+                        type="text" 
+                        icon={<EditOutlined style={{ color: '#1890ff' }} />} 
+                        onClick={() => onEdit(record)} 
+                    />
+                    <Button 
+                        type="text" 
+                        danger 
+                        icon={<DeleteOutlined />} 
+                        onClick={() => onDelete(record._id)} 
+                    />
+                </Space>
+            ),
+        },
+    ];
+
     return (
-        <TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
-            <Table>
-                <TableHead sx={{ bgcolor: 'grey.50' }}>
-                    <TableRow>
-                        <TableCell sx={{ fontWeight: 700 }}>Project</TableCell>
-                        <TableCell sx={{ fontWeight: 700 }}>Client</TableCell>
-                        <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
-                        <TableCell sx={{ fontWeight: 700 }}>Priority</TableCell>
-                        <TableCell sx={{ fontWeight: 700 }}>Progress</TableCell>
-                        <TableCell sx={{ fontWeight: 700 }}>Deadline</TableCell>
-                        <TableCell sx={{ fontWeight: 700 }}>Manager</TableCell>
-                        <TableCell align="right" sx={{ fontWeight: 700 }}>Actions</TableCell>
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                    {projects.map((project) => (
-                        <TableRow key={project._id} hover>
-                            <TableCell>
-                                <Typography variant="body2" sx={{ fontWeight: 700 }}>{project.name}</Typography>
-                                <Typography variant="caption" color="text.secondary">{project.projectNumber} • {project.type}</Typography>
-                            </TableCell>
-                            <TableCell>
-                                <Typography variant="body2">{project.clientId?.businessName}</Typography>
-                            </TableCell>
-                            <TableCell>
-                                <StatusChip status={project.status} />
-                            </TableCell>
-                            <TableCell>
-                                <PriorityChip priority={project.priority} />
-                            </TableCell>
-                            <TableCell sx={{ minWidth: 150 }}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                    <Box sx={{ flexGrow: 1 }}>
-                                        <LinearProgress
-                                            variant="determinate"
-                                            value={project.completionPercentage}
-                                            sx={{ height: 6, borderRadius: 3 }}
-                                        />
-                                    </Box>
-                                    <Typography variant="caption" sx={{ fontWeight: 700 }}>{project.completionPercentage}%</Typography>
-                                </Box>
-                                <Typography variant="caption" color="text.secondary">
-                                    {project.completedTasks}/{project.totalTasks} Tasks
-                                </Typography>
-                            </TableCell>
-                            <TableCell>
-                                <Typography variant="body2">
-                                    {project.deadline ? dayjs(project.deadline).format('DD MMM YYYY') : '-'}
-                                </Typography>
-                            </TableCell>
-                            <TableCell>
-                                <Avatar
-                                    src={project.projectManager?.avatar}
-                                    sx={{ width: 28, height: 28 }}
-                                >
-                                    {project.projectManager?.name?.charAt(0)}
-                                </Avatar>
-                            </TableCell>
-                            <TableCell align="right">
-                                <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 0.5 }}>
-                                    <IconButton size="small" onClick={() => router.push(`/projects/${project._id}`)}>
-                                        <ViewIcon fontSize="small" />
-                                    </IconButton>
-                                    <IconButton size="small" color="primary" onClick={() => onEdit(project)}>
-                                        <EditIcon fontSize="small" />
-                                    </IconButton>
-                                    <IconButton size="small" color="error" onClick={() => onDelete(project._id)}>
-                                        <DeleteIcon fontSize="small" />
-                                    </IconButton>
-                                </Box>
-                            </TableCell>
-                        </TableRow>
-                    ))}
-                    {projects.length === 0 && (
-                        <TableRow>
-                            <TableCell colSpan={8} align="center" sx={{ py: 8 }}>
-                                <Typography color="text.secondary">No projects discovered.</Typography>
-                            </TableCell>
-                        </TableRow>
-                    )}
-                </TableBody>
-            </Table>
-        </TableContainer>
+        <Table 
+            columns={columns} 
+            dataSource={projects} 
+            rowKey="_id"
+            pagination={{ pageSize: 10 }}
+            scroll={{ x: 1000 }}
+            style={{ 
+                borderRadius: 12, 
+                overflow: 'hidden', 
+                boxShadow: '0 4px 20px rgba(0,0,0,0.05)' 
+            }}
+            locale={{ emptyText: <Text type="secondary">No projects discovered.</Text> }}
+        />
     );
 }

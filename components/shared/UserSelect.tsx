@@ -1,18 +1,21 @@
 import { useState, useEffect } from 'react';
-import { FormControl, InputLabel, Select, MenuItem, Avatar, Box, Typography, CircularProgress } from '@mui/material';
+import { Select, Avatar, Space, Typography, Spin } from 'antd';
+import { LoadingOutlined } from '@ant-design/icons';
 import apiClient from '@/lib/apiClient';
 
+const { Text } = Typography;
+
 interface UserSelectProps {
-    value: string | string[];
-    onChange: (value: any) => void;
+    value?: string | string[];
+    onChange?: (value: any) => void;
     label: string;
     multiple?: boolean;
-    error?: boolean;
+    status?: "" | "error" | "warning";
     helperText?: string;
     disabled?: boolean;
 }
 
-export default function UserSelect({ value, onChange, label, multiple = false, error, helperText, disabled }: UserSelectProps) {
+export default function UserSelect({ value, onChange, label, multiple = false, status, helperText, disabled }: UserSelectProps) {
     const [users, setUsers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -29,59 +32,37 @@ export default function UserSelect({ value, onChange, label, multiple = false, e
     }, []);
 
     return (
-        <FormControl fullWidth error={error} disabled={disabled || loading}>
-            <InputLabel>{label}</InputLabel>
+        <div>
+            <Text type="secondary" style={{ fontSize: 12, marginBottom: 4, display: 'block' }}>{label}</Text>
             <Select
                 value={value}
-                label={label}
-                multiple={multiple}
-                onChange={(e) => onChange(e.target.value)}
-                renderValue={(selected: any) => {
-                    if (multiple) {
-                        const selectedUsers = users.filter(u => (selected as string[]).includes(u._id));
-                        return (
-                            <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-                                {selectedUsers.map(user => (
-                                    <Avatar key={user._id} src={user.avatar} sx={{ width: 24, height: 24 }}>
-                                        {user.name.charAt(0)}
-                                    </Avatar>
-                                ))}
-                            </Box>
-                        );
-                    }
-                    const user = users.find(u => u._id === selected);
-                    return user ? (
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Avatar src={user.avatar} sx={{ width: 24, height: 24 }}>
+                mode={multiple ? 'multiple' : undefined}
+                onChange={onChange}
+                disabled={disabled || loading}
+                status={status}
+                style={{ width: '100%' }}
+                placeholder={`Select ${label}`}
+                loading={loading}
+                optionLabelProp="label"
+                filterOption={(input, option) =>
+                    (option?.label as string ?? '').toLowerCase().includes(input.toLowerCase())
+                }
+            >
+                {users.map((user) => (
+                    <Select.Option key={user._id} value={user._id} label={user.name}>
+                        <Space>
+                            <Avatar size="small" src={user.avatar}>
                                 {user.name.charAt(0)}
                             </Avatar>
-                            <Typography variant="body2">{user.name}</Typography>
-                        </Box>
-                    ) : selected;
-                }}
-            >
-                {loading ? (
-                    <MenuItem disabled>
-                        <CircularProgress size={20} sx={{ mr: 1 }} />
-                        Loading users...
-                    </MenuItem>
-                ) : (
-                    users.map((user) => (
-                        <MenuItem key={user._id} value={user._id}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                <Avatar src={user.avatar} sx={{ width: 32, height: 32 }}>
-                                    {user.name.charAt(0)}
-                                </Avatar>
-                                <Box>
-                                    <Typography variant="body2" sx={{ fontWeight: 600 }}>{user.name}</Typography>
-                                    <Typography variant="caption" color="text.secondary">{user.email}</Typography>
-                                </Box>
-                            </Box>
-                        </MenuItem>
-                    ))
-                )}
+                            <div>
+                                <Text strong style={{ display: 'block', fontSize: 13, lineHeight: 1 }}>{user.name}</Text>
+                                <Text type="secondary" style={{ fontSize: 11 }}>{user.email}</Text>
+                            </div>
+                        </Space>
+                    </Select.Option>
+                ))}
             </Select>
-            {helperText && <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.5 }}>{helperText}</Typography>}
-        </FormControl>
+            {helperText && <Text type="danger" style={{ fontSize: 12, marginTop: 4, display: 'block' }}>{helperText}</Text>}
+        </div>
     );
 }

@@ -1,12 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Button } from '@mui/material';
-import { Add as AddIcon } from '@mui/icons-material';
+import { Button, Flex, Modal } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
 import PageHeader from '@/components/shared/PageHeader';
 import RoleTable from '@/components/roles/RoleTable';
 import RoleForm from '@/components/roles/RoleForm';
-import ConfirmDialog from '@/components/shared/ConfirmDialog';
 import apiClient from '@/lib/apiClient';
 
 export default function RolesPage() {
@@ -14,7 +13,6 @@ export default function RolesPage() {
     const [loading, setLoading] = useState(true);
     const [formOpen, setFormOpen] = useState(false);
     const [selectedRole, setSelectedRole] = useState<any>(null);
-    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [actionLoading, setActionLoading] = useState(false);
 
     const fetchRoles = async () => {
@@ -44,8 +42,21 @@ export default function RolesPage() {
     };
 
     const handleDeleteClick = (role: any) => {
-        setSelectedRole(role);
-        setDeleteDialogOpen(true);
+        Modal.confirm({
+            title: 'Delete Role',
+            content: `Are you sure you want to delete the "${role.name}" role? This cannot be undone.`,
+            okText: 'Delete',
+            okType: 'danger',
+            cancelText: 'Cancel',
+            onOk: async () => {
+                try {
+                    await apiClient.delete(`/roles/${role._id}`);
+                    fetchRoles();
+                } catch (error) {
+                    console.error('Failed to delete role:', error);
+                }
+            }
+        });
     };
 
     const handleFormSubmit = async (data: any) => {
@@ -65,34 +76,23 @@ export default function RolesPage() {
         }
     };
 
-    const confirmDelete = async () => {
-        setActionLoading(true);
-        try {
-            await apiClient.delete(`/roles/${selectedRole._id}`);
-            setDeleteDialogOpen(false);
-            fetchRoles();
-        } catch (error) {
-            console.error('Failed to delete role:', error);
-        } finally {
-            setActionLoading(false);
-        }
-    };
-
     return (
-        <>
-            <PageHeader
-                title="Role Management"
-                subtitle="Define roles and set granular permissions for each module."
-                action={
-                    <Button
-                        variant="contained"
-                        startIcon={<AddIcon />}
-                        onClick={handleAddRole}
-                    >
-                        Add Role
-                    </Button>
-                }
-            />
+        <div>
+            <Flex justify="space-between" align="flex-start" style={{ marginBottom: 32 }}>
+                <PageHeader
+                    title="Role Management"
+                    subtitle="Define roles and set granular permissions for each module."
+                />
+                <Button
+                    type="primary"
+                    size="large"
+                    icon={<PlusOutlined />}
+                    onClick={handleAddRole}
+                    style={{ height: 45, fontWeight: 600, borderRadius: 8 }}
+                >
+                    Add Role
+                </Button>
+            </Flex>
 
             <RoleTable
                 roles={roles}
@@ -107,15 +107,6 @@ export default function RolesPage() {
                 onSubmit={handleFormSubmit}
                 loading={actionLoading}
             />
-
-            <ConfirmDialog
-                open={deleteDialogOpen}
-                title="Delete Role"
-                message={`Are you sure you want to delete the "${selectedRole?.name}" role? This cannot be undone.`}
-                onConfirm={confirmDelete}
-                onCancel={() => setDeleteDialogOpen(false)}
-                loading={actionLoading}
-            />
-        </>
+        </div>
     );
 }
