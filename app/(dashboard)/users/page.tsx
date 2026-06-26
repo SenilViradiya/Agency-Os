@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button, Box, TextField, InputAdornment, MenuItem } from '@mui/material';
 import { Add as AddIcon, Search as SearchIcon } from '@mui/icons-material';
 import PageHeader from '@/components/shared/PageHeader';
@@ -10,6 +11,7 @@ import ConfirmDialog from '@/components/shared/ConfirmDialog';
 import apiClient from '@/lib/apiClient';
 
 export default function UsersPage() {
+    const router = useRouter();
     const [users, setUsers] = useState([]);
     const [roles, setRoles] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -114,7 +116,7 @@ export default function UsersPage() {
                     <Button
                         variant="contained"
                         startIcon={<AddIcon />}
-                        onClick={handleAddUser}
+                        onClick={() => router.push('/users/new')}
                     >
                         Add User
                     </Button>

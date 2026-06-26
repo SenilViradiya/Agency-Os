@@ -10,7 +10,10 @@ export default auth((req) => {
   const isDashboardPage = req.nextUrl.pathname.startsWith("/dashboard") || 
                           req.nextUrl.pathname.startsWith("/users") || 
                           req.nextUrl.pathname.startsWith("/roles");
-  const isApiRoute = req.nextUrl.pathname.startsWith("/api") && !req.nextUrl.pathname.startsWith("/api/auth");
+  const isApiRoute = req.nextUrl.pathname.startsWith("/api") && 
+                      !req.nextUrl.pathname.startsWith("/api/auth") &&
+                      !req.nextUrl.pathname.startsWith("/api/test-db-auth");
+
 
   if (isAuthPage && isLoggedIn) {
     return NextResponse.redirect(new URL("/dashboard", req.nextUrl));
