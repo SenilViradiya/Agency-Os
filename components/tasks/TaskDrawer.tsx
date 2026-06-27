@@ -13,8 +13,7 @@ import {
     Typography, 
     Divider, 
     Row, 
-    Col,
-    List
+    Col
 } from 'antd';
 import { CloseOutlined, PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';

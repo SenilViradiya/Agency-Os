@@ -22,17 +22,18 @@ interface StageSectionProps {
     data: any;
     isActive: boolean;
     onEdit: () => void;
+    customRender?: React.ReactNode;
 }
 
-const STATUS_CONFIG = {
+const STATUS_CONFIG: any = {
     pending: { color: 'default', label: 'Pending', icon: <ClockCircleFilled style={{ color: '#bfbfbf' }} /> },
     in_progress: { color: 'blue', label: 'In Progress', icon: <ClockCircleFilled style={{ color: '#1677ff' }} /> },
     done: { color: 'green', label: 'Completed', icon: <CheckCircleFilled style={{ color: '#52c41a' }} /> },
     skipped: { color: 'default', label: 'Skipped', icon: <MinusCircleFilled style={{ color: '#bfbfbf' }} /> },
 };
 
-export default function StageSection({ title, stageKey, icon, status, assignedTo, data, isActive, onEdit }: StageSectionProps) {
-    const config = STATUS_CONFIG[status];
+export default function StageSection({ title, stageKey, icon, status, assignedTo, data, isActive, onEdit, customRender }: StageSectionProps) {
+    const config = STATUS_CONFIG[status] || STATUS_CONFIG.pending;
     const isExpanded = status === 'in_progress' || status === 'done' || isActive;
 
     const renderData = () => {
@@ -92,7 +93,7 @@ export default function StageSection({ title, stageKey, icon, status, assignedTo
                 boxShadow: isActive ? '0 4px 12px rgba(108, 99, 255, 0.1)' : 'none'
             }}
         >
-            {isExpanded && renderData()}
+            {isExpanded && (customRender || renderData())}
         </Card>
     );
 }

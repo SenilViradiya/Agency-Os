@@ -73,28 +73,49 @@ export interface IContentItem extends Document {
   };
 
   approvalData: {
-    approvalType: 'internal' | 'client' | 'both';
-    internalApprovedBy?: mongoose.Types.ObjectId;
-    internalApprovedAt?: Date;
-    clientApprovedBy?: string;
-    clientApprovedAt?: Date;
-    revisionRequested: boolean;
-    revisionNotes?: string;
-    revisionCount: number;
+    submittedForReviewAt?: Date;
+    submittedBy?: mongoose.Types.ObjectId;
+    driveLink?: string;
+    submissionNotes?: string;
+
+    reviewedBy?: mongoose.Types.ObjectId;
+    reviewedAt?: Date;
+
+    status: 'not_submitted' | 'pending_review' | 'approved' | 'revision_requested';
+    approvedAt?: Date;
+    approvalNotes?: string;
+
+    revisionHistory: {
+      revisionNumber: number;
+      requestedBy: mongoose.Types.ObjectId;
+      requestedAt: Date;
+      revisionNotes: string;
+      resolvedAt?: Date;
+      driveLink?: string;
+    }[];
+    totalRevisions: number;
+    currentRevisionNumber: number;
   };
 
-  publishData?: {
+  publishData: {
     scheduledAt?: Date;
     publishedAt?: Date;
-    publishedUrl?: string;
     publishedBy?: mongoose.Types.ObjectId;
+    publishedUrl?: string;
+    platform?: string;
+    platforms: {
+      platform: string;
+      url: string;
+      publishedAt: Date;
+    }[];
+    publishNotes?: string;
+    status: 'not_ready' | 'ready_to_publish' | 'scheduled' | 'published';
   };
 
-  status: 'draft' | 'in_production' | 'in_approval' | 'approved' | 'published' | 'on_hold' | 'cancelled';
+  status: 'draft' | 'in_production' | 'in_approval' | 'pending_approval' | 'approved' | 'revision_requested' | 'published' | 'on_hold' | 'cancelled';
   plannedPublishDate?: Date;
   priority: 'low' | 'medium' | 'high';
   assignedTo: mongoose.Types.ObjectId;
-  totalRevisions: number;
 
   comments: {
     _id: mongoose.Types.ObjectId;
@@ -190,32 +211,61 @@ const ContentItemSchema: Schema = new Schema(
     },
 
     approvalData: {
-      approvalType: { type: String, enum: ['internal', 'client', 'both'], default: 'both' },
-      internalApprovedBy: { type: Schema.Types.ObjectId, ref: 'User' },
-      internalApprovedAt: { type: Date },
-      clientApprovedBy: { type: String },
-      clientApprovedAt: { type: Date },
-      revisionRequested: { type: Boolean, default: false },
-      revisionNotes: { type: String },
-      revisionCount: { type: Number, default: 0 },
+      submittedForReviewAt: { type: Date },
+      submittedBy: { type: Schema.Types.ObjectId, ref: 'User' },
+      driveLink: { type: String },
+      submissionNotes: { type: String },
+
+      reviewedBy: { type: Schema.Types.ObjectId, ref: 'User' },
+      reviewedAt: { type: Date },
+
+      status: { 
+        type: String, 
+        enum: ['not_submitted', 'pending_review', 'approved', 'revision_requested'], 
+        default: 'not_submitted' 
+      },
+      approvedAt: { type: Date },
+      approvalNotes: { type: String },
+
+      revisionHistory: [{
+        revisionNumber: { type: Number },
+        requestedBy: { type: Schema.Types.ObjectId, ref: 'User' },
+        requestedAt: { type: Date },
+        revisionNotes: { type: String },
+        resolvedAt: { type: Date },
+        driveLink: { type: String },
+      }],
+      totalRevisions: { type: Number, default: 0 },
+      currentRevisionNumber: { type: Number, default: 0 },
     },
 
     publishData: {
       scheduledAt: { type: Date },
       publishedAt: { type: Date },
-      publishedUrl: { type: String },
       publishedBy: { type: Schema.Types.ObjectId, ref: 'User' },
+      publishedUrl: { type: String },
+      platform: { type: String },
+      platforms: [{
+        platform: { type: String },
+        url: { type: String },
+        publishedAt: { type: Date }
+      }],
+      publishNotes: { type: String },
+      status: { 
+        type: String, 
+        enum: ['not_ready', 'ready_to_publish', 'scheduled', 'published'], 
+        default: 'not_ready' 
+      },
     },
 
     status: {
       type: String,
-      enum: ['draft', 'in_production', 'in_approval', 'approved', 'published', 'on_hold', 'cancelled'],
+      enum: ['draft', 'in_production', 'in_approval', 'pending_approval', 'approved', 'revision_requested', 'published', 'on_hold', 'cancelled'],
       default: 'draft',
     },
     plannedPublishDate: { type: Date },
     priority: { type: String, enum: ['low', 'medium', 'high'], default: 'medium' },
     assignedTo: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    totalRevisions: { type: Number, default: 0 },
 
     comments: [
       {

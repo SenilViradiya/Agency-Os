@@ -1,29 +1,26 @@
-import NextAuth from "next-auth";
-import { authConfig } from "./lib/auth.config";
+import { auth } from "./lib/auth";
 import { NextResponse } from "next/server";
 
-const { auth } = NextAuth(authConfig);
-
 export default auth((req) => {
+  const { nextUrl } = req;
   const isLoggedIn = !!req.auth;
-  const isAuthPage = req.nextUrl.pathname.startsWith("/login");
-  const isDashboardPage = req.nextUrl.pathname.startsWith("/dashboard") || 
-                          req.nextUrl.pathname.startsWith("/users") || 
-                          req.nextUrl.pathname.startsWith("/roles");
-  const isApiRoute = req.nextUrl.pathname.startsWith("/api") && 
-                      !req.nextUrl.pathname.startsWith("/api/auth") &&
-                      !req.nextUrl.pathname.startsWith("/api/test-db-auth");
+  
+  console.log('[PROXY] URL:', nextUrl.pathname, '| LoggedIn:', isLoggedIn);
 
+  const isApiRoute = nextUrl.pathname.startsWith("/api");
+  const isAuthApiRoute = nextUrl.pathname.startsWith("/api/auth");
+  const isAuthPage = nextUrl.pathname.startsWith("/login");
+  const isPublicRoute = isAuthPage || isAuthApiRoute || nextUrl.pathname.startsWith("/_next") || nextUrl.pathname === "/favicon.ico";
 
   if (isAuthPage && isLoggedIn) {
-    return NextResponse.redirect(new URL("/dashboard", req.nextUrl));
+    return NextResponse.redirect(new URL("/dashboard", nextUrl));
   }
 
-  if ((isDashboardPage || isApiRoute) && !isLoggedIn) {
+  if (!isLoggedIn && !isPublicRoute) {
      if (isApiRoute) {
         return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
      }
-    return NextResponse.redirect(new URL("/login", req.nextUrl));
+     return NextResponse.redirect(new URL("/login", nextUrl));
   }
 
   return NextResponse.next();

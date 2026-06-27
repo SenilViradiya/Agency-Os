@@ -3,6 +3,9 @@ import { auth } from '@/lib/auth';
 import dbConnect from '@/lib/db';
 import ContentItem from '@/models/ContentItem';
 import Task from '@/models/Task';
+import Project from '@/models/Project';
+import Client from '@/models/Client';
+import User from '@/models/User';
 import { hasPermission } from '@/lib/auth';
 
 export async function GET(req: NextRequest) {

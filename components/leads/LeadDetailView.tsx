@@ -15,7 +15,6 @@ import {
     Timeline,
     Space,
     Flex,
-    List,
 } from 'antd';
 import {
     HistoryOutlined,

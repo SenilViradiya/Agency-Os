@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { registerModels } from '@/models';
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
@@ -18,6 +19,10 @@ if (!cached) {
 }
 
 async function dbConnect() {
+  // Always register models so Mongoose knows every schema,
+  // regardless of which route file imported which models.
+  registerModels();
+
   if (cached.conn) {
     return cached.conn;
   }

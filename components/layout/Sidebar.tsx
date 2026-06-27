@@ -1,7 +1,7 @@
 'use client';
 
-import React from 'react';
-import { Layout, Menu, Typography, Avatar, Divider, Button, Tooltip } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Layout, Menu, Typography, Avatar, Divider, Button, Tooltip, Badge } from 'antd';
 import {
     DashboardOutlined as DashboardIcon,
     TeamOutlined as PeopleIcon,
@@ -10,11 +10,14 @@ import {
     SolutionOutlined as LeadsIcon,
     ShopOutlined as ClientsIcon,
     ProjectOutlined as ProjectsIcon,
-    RocketOutlined as FinanceIcon,
+    RocketOutlined as PublishingIcon,
     VideoCameraOutlined as MeetingsIcon,
+    FileSearchOutlined as ApprovalsIcon,
+    UnorderedListOutlined as TasksIcon,
 } from '@ant-design/icons';
 import { usePathname, useRouter } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
+import apiClient from '@/lib/apiClient';
 
 const { Sider } = Layout;
 const { Text, Title } = Typography;
@@ -29,12 +32,41 @@ export default function Sidebar({ collapsed, onCollapse, isMobile }: SidebarProp
     const pathname = usePathname();
     const router = useRouter();
     const { data: session } = useSession();
+    const [counts, setCounts] = useState({ pendingApprovals: 0, readyToPublish: 0, revisionsRequested: 0 });
+
+    const fetchCounts = async () => {
+        try {
+            // Simplified fetch for sidebar badges
+            const appRes = await apiClient.get('/approvals?limit=1');
+            const pubRes = await apiClient.get('/publishing?status=ready_to_publish&limit=1');
+            
+            // For editors, we also want to see revision_requested count
+            const revRes = await apiClient.get('/approvals?status=revision_requested&limit=1');
+
+            setCounts({
+                pendingApprovals: appRes.data.pagination.total,
+                readyToPublish: pubRes.data.pagination.total,
+                revisionsRequested: revRes.data.pagination.total
+            });
+        } catch (error) {
+            console.error('Failed to fetch sidebar counts:', error);
+        }
+    };
+
+    useEffect(() => {
+        if (session) {
+            fetchCounts();
+            const interval = setInterval(fetchCounts, 60000); // Refresh every minute
+            return () => clearInterval(interval);
+        }
+    }, [session]);
 
     const handleLogout = async () => {
         await signOut({ callbackUrl: '/login' });
     };
 
     const currentRole = (session?.user as any)?.role;
+    const isManager = currentRole === 'Manager' || currentRole === 'Super Admin' || currentRole === 'Admin';
 
     const menuItems = [
         { key: 'dashboard', type: 'group', label: 'Overview', children: [
@@ -46,8 +78,34 @@ export default function Sidebar({ collapsed, onCollapse, isMobile }: SidebarProp
             { key: '/projects', label: 'Projects', icon: <ProjectsIcon /> },
         ]},
         { key: 'production', type: 'group', label: 'Production', children: [
-            { key: '/tasks', label: 'Tasks', icon: <ProjectsIcon /> },
+            { key: '/tasks', label: 'Tasks', icon: <TasksIcon /> },
             { key: '/content', label: 'Content Planner', icon: <MeetingsIcon /> },
+            { 
+                key: '/approvals', 
+                label: (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                        <span>Approvals</span>
+                        {!collapsed && (
+                            <Badge 
+                                count={isManager ? counts.pendingApprovals : counts.revisionsRequested} 
+                                color={isManager ? '#ff4d4f' : '#faad14'} 
+                                size="small" 
+                            />
+                        )}
+                    </div>
+                ), 
+                icon: <ApprovalsIcon /> 
+            },
+            { 
+                key: '/publishing', 
+                label: (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                        <span>Publishing</span>
+                        {!collapsed && <Badge count={counts.readyToPublish} color="#1890ff" size="small" />}
+                    </div>
+                ), 
+                icon: <PublishingIcon /> 
+            },
         ]},
         { key: 'admin', type: 'group', label: 'System', children: [
             { key: '/users', label: 'Users', icon: <PeopleIcon /> },
@@ -55,11 +113,10 @@ export default function Sidebar({ collapsed, onCollapse, isMobile }: SidebarProp
         ]},
     ];
 
-    const filteredItems = menuItems; // Already filtered above in Admin group logic
-
+    const filteredItems = menuItems;
 
     const comingSoonItems = [
-        { key: 'finance', label: 'Finance', icon: <FinanceIcon />, disabled: true },
+        { key: 'finance', label: 'Finance', icon: <PublishingIcon />, disabled: true },
         { key: 'meetings', label: 'Meetings', icon: <MeetingsIcon />, disabled: true },
     ];
 
