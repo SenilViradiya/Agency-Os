@@ -48,7 +48,7 @@ export default function LeadDetailView({ lead, onUpdate, onConvert }: LeadDetail
     const overviewContent = (
         <Row gutter={[40, 24]}>
             <Col span={12}>
-                <Space direction="vertical" size="large" style={{ width: '100%' }}>
+                <Space orientation="vertical" size="large" style={{ width: '100%' }}>
                     <InfoItem label="Contact Person" value={lead.name} />
                     <InfoItem label="Email" value={lead.email} />
                     <InfoItem label="Phone" value={lead.phone} />
@@ -56,7 +56,7 @@ export default function LeadDetailView({ lead, onUpdate, onConvert }: LeadDetail
                 </Space>
             </Col>
             <Col span={12}>
-                <Space direction="vertical" size="large" style={{ width: '100%' }}>
+                <Space orientation="vertical" size="large" style={{ width: '100%' }}>
                     <InfoItem label="Source" value={lead.source} style={{ textTransform: 'capitalize' }} />
                     <InfoItem label="Industry" value={lead.industry || '-'} />
                     <InfoItem label="Services" value={lead.services?.join(', ') || '-'} />
@@ -69,9 +69,10 @@ export default function LeadDetailView({ lead, onUpdate, onConvert }: LeadDetail
     const timelineContent = (
         <Timeline
             style={{ marginTop: 16 }}
+            mode="start"
             items={lead.timeline?.slice().reverse().map((item: any, i: number) => ({
                 color: '#6C63FF',
-                children: (
+                content: (
                     <div key={i}>
                         <Text strong style={{ display: 'block' }}>{item.action}</Text>
                         {item.note && <Paragraph style={{ fontSize: 13, marginBottom: 4 }}>{item.note}</Paragraph>}
@@ -133,9 +134,9 @@ export default function LeadDetailView({ lead, onUpdate, onConvert }: LeadDetail
 
             {/* Right Column - 35% */}
             <Col xs={24} md={8}>
-                <Space direction="vertical" size="large" style={{ width: '100%' }}>
+                <Space orientation="vertical" size="large" style={{ width: '100%' }}>
                     <Card size="small" title={<Text strong style={{ fontSize: 12, color: '#8c8c8c' }}>QUICK ACTIONS</Text>} style={{ borderRadius: 12 }}>
-                        <Space direction="vertical" style={{ width: '100%', paddingTop: 8 }} size="middle">
+                        <Space orientation="vertical" style={{ width: '100%', paddingTop: 8 }} size="middle">
                             <div>
                                 <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 8 }}>Change Status</Text>
                                 <Select
@@ -168,7 +169,7 @@ export default function LeadDetailView({ lead, onUpdate, onConvert }: LeadDetail
                     </Card>
 
                     <Card size="small" title={<Text strong style={{ fontSize: 12, color: '#8c8c8c' }}>LEAD STATS</Text>} style={{ borderRadius: 12 }}>
-                        <Space direction="vertical" style={{ width: '100%', paddingTop: 8 }} size="large">
+                        <Space orientation="vertical" style={{ width: '100%', paddingTop: 8 }} size="large">
                             <StatItem label="Budget" value={`₹${lead.budget?.toLocaleString('en-IN')}`} icon={<WalletOutlined style={{ color: '#6C63FF' }} />} />
                             <StatItem label="Lead Source" value={lead.source} icon={<GlobalOutlined style={{ color: '#6C63FF' }} />} />
                             <StatItem label="Follow-up" value={lead.followUpDate ? dayjs(lead.followUpDate).format('DD MMM YYYY') : 'Not Set'} icon={<CalendarOutlined style={{ color: '#ff4d4f' }} />} />

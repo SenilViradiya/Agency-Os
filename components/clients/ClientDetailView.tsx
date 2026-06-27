@@ -11,7 +11,6 @@ import {
     Button,
     Avatar,
     Tag,
-    List,
     Space,
     Flex,
     Tooltip,
@@ -26,8 +25,6 @@ import {
     YoutubeOutlined,
     LinkedinOutlined,
     TwitterOutlined,
-    GlobalOutlined,
-    UserOutlined,
     PlusOutlined,
 } from '@ant-design/icons';
 import StatusChip from '@/components/shared/StatusChip';
@@ -60,7 +57,7 @@ export default function ClientDetailView({ client, onEdit }: ClientDetailViewPro
                 <Card title={<Text strong>General Information</Text>} style={{ borderRadius: 12 }}>
                     <Row gutter={[40, 32]}>
                         <Col span={12}>
-                            <Space direction="vertical" size="large" style={{ width: '100%' }}>
+                            <Space orientation="vertical" size="large" style={{ width: '100%' }}>
                                 <InfoItem label="Contact Person" value={client.contactPerson} />
                                 <InfoItem label="Email" value={client.email} />
                                 <InfoItem label="Phone" value={client.phone} />
@@ -68,7 +65,7 @@ export default function ClientDetailView({ client, onEdit }: ClientDetailViewPro
                             </Space>
                         </Col>
                         <Col span={12}>
-                            <Space direction="vertical" size="large" style={{ width: '100%' }}>
+                            <Space orientation="vertical" size="large" style={{ width: '100%' }}>
                                 <InfoItem label="Industry" value={client.industry || '-'} />
                                 <InfoItem label="Website" value={client.website} isLink />
                                 <InfoItem label="Contract Start" value={client.contractStartDate ? dayjs(client.contractStartDate).format('DD MMM YYYY') : '-'} />
@@ -89,7 +86,7 @@ export default function ClientDetailView({ client, onEdit }: ClientDetailViewPro
             </Col>
 
             <Col xs={24} md={8}>
-                <Space direction="vertical" size="large" style={{ width: '100%' }}>
+                <Space orientation="vertical" size="large" style={{ width: '100%' }}>
                     <Card title={<Text strong>Assigned Team</Text>} style={{ borderRadius: 12 }}>
                         <Text type="secondary" style={{ fontSize: 10, fontWeight: 700, display: 'block', marginBottom: 12, textTransform: 'uppercase' }}>
                             Account Manager
@@ -107,7 +104,7 @@ export default function ClientDetailView({ client, onEdit }: ClientDetailViewPro
                         <Text type="secondary" style={{ fontSize: 10, fontWeight: 700, display: 'block', marginBottom: 12, textTransform: 'uppercase' }}>
                             Team Members ({client.assignedTeam?.length || 0})
                         </Text>
-                        <Avatar.Group maxCount={5}>
+                        <Avatar.Group max={{ count: 5 }}>
                             {client.assignedTeam?.map((member: any) => (
                                 <Tooltip key={member._id} title={member.name}>
                                     <Avatar src={member.avatar}>{member.name.charAt(0)}</Avatar>
@@ -117,13 +114,10 @@ export default function ClientDetailView({ client, onEdit }: ClientDetailViewPro
                     </Card>
 
                     <Card title={<Text strong>Social Presence</Text>} style={{ borderRadius: 12 }}>
-                        <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+                        <Space orientation="vertical" size="middle" style={{ width: '100%' }}>
                             <SocialLink icon={<InstagramOutlined />} label="Instagram" value={client.socialHandles?.instagram} />
-                            <YoutubeOutlined />
                             <SocialLink icon={<YoutubeOutlined />} label="YouTube" value={client.socialHandles?.youtube} />
-                            <LinkedinOutlined />
                             <SocialLink icon={<LinkedinOutlined />} label="LinkedIn" value={client.socialHandles?.linkedin} />
-                            <TwitterOutlined />
                             <SocialLink icon={<TwitterOutlined />} label="Twitter / X" value={client.socialHandles?.twitter} />
                         </Space>
                     </Card>
@@ -144,44 +138,51 @@ export default function ClientDetailView({ client, onEdit }: ClientDetailViewPro
                     New Project
                 </Button>
             </Flex>
-            <List
-                dataSource={client.projects}
-                renderItem={(project: any) => (
-                    <Card 
-                        size="small" 
-                        hoverable 
-                        style={{ marginBottom: 12, borderRadius: 8 }}
-                        onClick={() => router.push(`/projects/${project._id}`)}
-                    >
-                        <Row align="middle" gutter={16}>
-                            <Col span={1}>
-                                <ProjectOutlined style={{ fontSize: 20, color: project.type === 'retainer' ? '#1890ff' : '#faad14' }} />
-                            </Col>
-                            <Col span={10}>
-                                <Space direction="vertical" size={0}>
-                                    <Space>
-                                        <Text strong>{project.name}</Text>
-                                        <Tag color={project.type === 'retainer' ? 'blue' : 'orange'} style={{ fontSize: 10, textTransform: 'capitalize' }}>
-                                            {project.type}
-                                        </Tag>
-                                        <StatusChip status={project.status} />
+            
+            <Flex orientation="vertical" gap={12} style={{ width: '100%' }}>
+                {client.projects && client.projects.length > 0 ? (
+                    client.projects.map((project: any) => (
+                        <Card 
+                            key={project._id}
+                            size="small" 
+                            hoverable 
+                            style={{ borderRadius: 8, width: '100%' }}
+                            onClick={() => router.push(`/projects/${project._id}`)}
+                            styles={{ body: { padding: '12px 16px' } }}
+                        >
+                            <Row align="middle" gutter={16}>
+                                <Col span={1}>
+                                    <ProjectOutlined style={{ fontSize: 20, color: project.type === 'retainer' ? '#1890ff' : '#faad14' }} />
+                                </Col>
+                                <Col span={10}>
+                                    <Space orientation="vertical" size={0}>
+                                        <Space>
+                                            <Text strong>{project.name}</Text>
+                                            <Tag color={project.type === 'retainer' ? 'blue' : 'orange'} style={{ fontSize: 10, textTransform: 'capitalize' }}>
+                                                {project.type}
+                                            </Tag>
+                                            <StatusChip status={project.status} />
+                                        </Space>
+                                        <Text type="secondary" style={{ fontSize: 12 }}>
+                                            #{project.projectNumber} • Deadline: {project.deadline ? dayjs(project.deadline).format('DD MMM YYYY') : 'N/A'}
+                                        </Text>
                                     </Space>
-                                    <Text type="secondary" style={{ fontSize: 12 }}>
-                                        #{project.projectNumber} • Deadline: {project.deadline ? dayjs(project.deadline).format('DD MMM YYYY') : 'N/A'}
-                                    </Text>
-                                </Space>
-                            </Col>
-                            <Col span={8}>
-                                <Flex align="center" gap={12}>
-                                    <Text style={{ fontSize: 12, minWidth: 40 }}>{project.completionPercentage}%</Text>
-                                    <Progress percent={project.completionPercentage} size="small" showInfo={false} />
-                                </Flex>
-                            </Col>
-                        </Row>
-                    </Card>
+                                </Col>
+                                <Col span={8}>
+                                    <Flex align="center" gap={12}>
+                                        <Text style={{ fontSize: 12, minWidth: 40 }}>{project.completionPercentage}%</Text>
+                                        <Progress percent={project.completionPercentage} size="small" showInfo={false} />
+                                    </Flex>
+                                </Col>
+                            </Row>
+                        </Card>
+                    ))
+                ) : (
+                    <div style={{ textAlign: 'center', padding: '24px 0' }}>
+                        <Text type="secondary">No projects found for this client.</Text>
+                    </div>
                 )}
-                locale={{ emptyText: <Text type="secondary">No projects found for this client.</Text> }}
-            />
+            </Flex>
         </Card>
     );
 

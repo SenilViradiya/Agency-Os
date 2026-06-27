@@ -16,8 +16,7 @@ if (!MONGODB_URI) {
 }
 
 const modules = [
-  'leads', 'clients', 'projects', 'tasks', 'scripts', 'shoots', 'editing',
-  'thumbnails', 'captions', 'approvals', 'publishing', 'analytics',
+  'leads', 'clients', 'projects', 'tasks', 'content', 'analytics',
   'users', 'roles', 'hr', 'finance', 'meetings', 'assets', 'vendors'
 ];
 

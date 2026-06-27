@@ -37,18 +37,26 @@ export default function Sidebar({ collapsed, onCollapse, isMobile }: SidebarProp
     const currentRole = (session?.user as any)?.role;
 
     const menuItems = [
-        { key: '/dashboard', label: 'Dashboard', icon: <DashboardIcon />, role: 'all' },
-        { key: '/leads', label: 'Leads', icon: <LeadsIcon />, role: 'all' },
-        { key: '/clients', label: 'Clients', icon: <ClientsIcon />, role: 'all' },
-        { key: '/projects', label: 'Projects', icon: <ProjectsIcon />, role: 'all' },
-        { key: '/users', label: 'Users', icon: <PeopleIcon />, role: 'all' },
-        { key: '/roles', label: 'Roles', icon: <AdminIcon />, role: 'super-admin-only' },
+        { key: 'dashboard', type: 'group', label: 'Overview', children: [
+            { key: '/dashboard', label: 'Dashboard', icon: <DashboardIcon /> },
+        ]},
+        { key: 'crm', type: 'group', label: 'CRM', children: [
+            { key: '/leads', label: 'Leads', icon: <LeadsIcon /> },
+            { key: '/clients', label: 'Clients', icon: <ClientsIcon /> },
+            { key: '/projects', label: 'Projects', icon: <ProjectsIcon /> },
+        ]},
+        { key: 'production', type: 'group', label: 'Production', children: [
+            { key: '/tasks', label: 'Tasks', icon: <ProjectsIcon /> },
+            { key: '/content', label: 'Content Planner', icon: <MeetingsIcon /> },
+        ]},
+        { key: 'admin', type: 'group', label: 'System', children: [
+            { key: '/users', label: 'Users', icon: <PeopleIcon /> },
+            ...(currentRole === 'Super Admin' ? [{ key: '/roles', label: 'Roles', icon: <AdminIcon /> }] : []),
+        ]},
     ];
 
-    const filteredItems = menuItems.filter(item => {
-        if (item.role === 'super-admin-only' && currentRole !== 'Super Admin') return false;
-        return true;
-    });
+    const filteredItems = menuItems; // Already filtered above in Admin group logic
+
 
     const comingSoonItems = [
         { key: 'finance', label: 'Finance', icon: <FinanceIcon />, disabled: true },
@@ -82,11 +90,13 @@ export default function Sidebar({ collapsed, onCollapse, isMobile }: SidebarProp
                 theme="dark"
                 mode="inline"
                 selectedKeys={[pathname]}
-                items={filteredItems.map(item => ({
-                    key: item.key,
-                    icon: item.icon,
-                    label: item.label,
-                    onClick: () => router.push(item.key),
+                items={filteredItems.map(group => ({
+                    ...group,
+                    type: group.type as "group",
+                    children: group.children?.map(item => ({
+                        ...item,
+                        onClick: () => router.push(item.key as string),
+                    }))
                 }))}
                 style={{ backgroundColor: 'transparent', borderRight: 0 }}
             />

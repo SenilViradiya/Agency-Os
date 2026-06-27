@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Layout } from 'antd';
+import { Layout, App } from 'antd';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
 
@@ -28,7 +28,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     };
 
     return (
-        <Layout style={{ minHeight: '100vh' }}>
+        <App>
+            <Layout style={{ minHeight: '100vh' }}>
             <Sidebar collapsed={collapsed} onCollapse={setCollapsed} isMobile={isMobile} />
             <Layout>
                 <Topbar collapsed={collapsed} onToggle={toggleCollapsed} />
@@ -42,5 +43,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </Content>
             </Layout>
         </Layout>
+        </App>
     );
 }

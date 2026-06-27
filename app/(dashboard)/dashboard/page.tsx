@@ -1,6 +1,6 @@
 'use client';
 
-import { Row, Col, Card, Typography, Flex, Space } from 'antd';
+import { Row, Col, Card, Typography, Flex, Space, Tag } from 'antd';
 import PageHeader from '@/components/shared/PageHeader';
 import {
     UserOutlined,
@@ -47,17 +47,49 @@ export default function DashboardPage() {
         totalUsers: 0,
         activeProjects: 0,
         pendingTasks: 0,
-        monthlyRevenue: '₹0'
+        contentInProduction: 0,
     });
+    const [myTasks, setMyTasks] = useState<any[]>([]);
+    const [pipelineStats, setPipelineStats] = useState<any>({});
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Fetch users count
-        apiClient.get('/users').then(res => {
-            if (res.data.success) {
-                setStats(prev => ({ ...prev, totalUsers: res.data.data.length }));
-            }
-        }).catch(() => { });
+        setLoading(true);
+        Promise.all([
+            apiClient.get('/users?limit=1'),
+            apiClient.get('/projects?limit=1'),
+            apiClient.get('/tasks?status=todo,in_progress&limit=100'),
+            apiClient.get('/content?status=in_production&limit=100'),
+        ]).then(([users, projects, tasks, content]) => {
+            setStats({
+                totalUsers: users.data.pagination?.total || 0,
+                activeProjects: projects.data.pagination?.total || 0,
+                pendingTasks: tasks.data.pagination?.total || 0,
+                contentInProduction: content.data.pagination?.total || 0,
+            });
+            
+            // Filter my tasks
+            const userTasks = tasks.data.data.slice(0, 5);
+            setMyTasks(userTasks);
+
+            // Calculate pipeline stats
+            const counts: any = {};
+            content.data.data.forEach((c: any) => {
+                counts[c.currentStage] = (counts[c.currentStage] || 0) + 1;
+            });
+            setPipelineStats(counts);
+        }).finally(() => setLoading(false));
     }, []);
+
+    const pipelineStages = [
+        { key: 'script', color: 'blue' },
+        { key: 'shoot', color: 'orange' },
+        { key: 'edit', color: 'purple' },
+        { key: 'thumbnail', color: 'magenta' },
+        { key: 'caption', color: 'cyan' },
+        { key: 'approval', color: 'gold' },
+        { key: 'publish', color: 'green' },
+    ];
 
     return (
         <div>
@@ -68,64 +100,67 @@ export default function DashboardPage() {
 
             <Row gutter={[24, 24]} style={{ marginBottom: 32 }}>
                 <Col xs={24} sm={12} md={6}>
-                    <StatCard title="Total Users" value={stats.totalUsers} icon={<UserOutlined />} color="#6C63FF" />
+                    <StatCard title="Total Team Members" value={stats.totalUsers} icon={<UserOutlined />} color="#6C63FF" />
                 </Col>
                 <Col xs={24} sm={12} md={6}>
                     <StatCard title="Active Projects" value={stats.activeProjects} icon={<ProjectOutlined />} color="#52c41a" />
                 </Col>
                 <Col xs={24} sm={12} md={6}>
-                    <StatCard title="Pending Tasks" value={stats.pendingTasks} icon={<CheckSquareOutlined />} color="#faad14" />
+                    <StatCard title="My Pending Tasks" value={stats.pendingTasks} icon={<CheckSquareOutlined />} color="#faad14" />
                 </Col>
                 <Col xs={24} sm={12} md={6}>
-                    <StatCard title="Monthly Revenue" value={stats.monthlyRevenue} icon={<DollarCircleOutlined />} color="#eb2f96" />
+                    <StatCard title="In Production" value={stats.contentInProduction} icon={<DollarCircleOutlined />} color="#eb2f96" />
                 </Col>
             </Row>
 
             <Row gutter={[24, 24]}>
-                <Col xs={24} md={16}>
+                <Col xs={24} md={12}>
                     <Card 
-                        title={<Text strong style={{ fontSize: 16 }}>Recent Activity</Text>} 
-                        style={{ borderRadius: 12, height: 400, boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}
+                        title={<Text strong style={{ fontSize: 16 }}>My Tasks Today</Text>} 
+                        style={{ borderRadius: 12, height: 450, boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}
+                        extra={<Link href="/tasks">View All</Link>}
                     >
-                        <Flex vertical align="center" justify="center" style={{ height: '280px', backgroundColor: '#fafafa', borderRadius: 12 }}>
-                            <Text type="secondary">No recent activity found.</Text>
+                        <Flex vertical gap={12}>
+                            {myTasks.length > 0 ? myTasks.map((task: any) => (
+                                <Flex key={task._id} align="center" justify="space-between" style={{ padding: '8px 4px', borderBottom: '1px solid #f0f0f0' }}>
+                                    <Space orientation="vertical" size={0}>
+                                        <Text strong style={{ fontSize: 13 }}>{task.title}</Text>
+                                        <Text type="secondary" style={{ fontSize: 11 }}>{task.taskNumber} • {task.entityType.toUpperCase()}</Text>
+                                    </Space>
+                                    <Space>
+                                        <Tag color={task.priority === 'urgent' ? 'red' : 'blue'}>{task.priority.toUpperCase()}</Tag>
+                                        <Tag color="orange">TODO</Tag>
+                                    </Space>
+                                </Flex>
+                            )) : (
+                                <Flex vertical align="center" justify="center" style={{ height: '300px' }}>
+                                    <Text type="secondary">No tasks assigned for today.</Text>
+                                </Flex>
+                            )}
                         </Flex>
                     </Card>
                 </Col>
-                <Col xs={24} md={8}>
+                <Col xs={24} md={12}>
                     <Card 
-                        title={<Text strong style={{ fontSize: 16 }}>Quick Links</Text>} 
-                        style={{ borderRadius: 12, height: 400, boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}
+                        title={<Text strong style={{ fontSize: 16 }}>Content Pipeline Overview</Text>} 
+                        style={{ borderRadius: 12, height: 450, boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}
+                        extra={<Link href="/content">Planner</Link>}
                     >
-                        <Flex vertical>
-                            {[
-                                { title: 'Manage Users', link: '/users', status: 'active' },
-                                { title: 'Configure Roles', link: '/roles', status: 'active' },
-                                { title: 'Add Lead', link: '#', status: 'soon' },
-                                { title: 'Create Project', link: '#', status: 'soon' }
-                            ].map((item, index) => (
-                                <div key={index} style={{ padding: '12px 0' }}>
-                                    <Flex justify="space-between" align="center" style={{ width: '100%' }}>
-                                        <Space>
-                                            <RightOutlined style={{ fontSize: 12, color: item.status === 'active' ? '#6C63FF' : '#bfbfbf' }} />
-                                            <Link 
-                                                href={item.link}
-                                                style={{ color: item.status === 'active' ? '#6C63FF' : 'inherit' }}
-                                            >
-                                                <Text 
-                                                    strong={item.status === 'active'} 
-                                                    type={item.status === 'active' ? undefined : 'secondary'}
-                                                    style={{ color: item.status === 'active' ? '#6C63FF' : undefined, cursor: item.status === 'active' ? 'pointer' : 'default' }}
-                                                >
-                                                    {item.title}
-                                                </Text>
-                                            </Link>
-                                        </Space>
-                                        {item.status === 'soon' && <Text type="secondary" style={{ fontSize: 11 }}>Soon</Text>}
-                                    </Flex>
-                                </div>
+                        <Row gutter={[16, 16]}>
+                            {pipelineStages.map(stage => (
+                                <Col span={8} key={stage.key}>
+                                    <Card size="small" styles={{ body: { padding: 12, textAlign: 'center' } }} style={{ borderRadius: 8, border: 'none', background: '#fafafa' }}>
+                                        <Text strong style={{ fontSize: 18, color: `var(--ant-${stage.color}-6)`, display: 'block' }}>
+                                            {pipelineStats[stage.key] || 0}
+                                        </Text>
+                                        <Text type="secondary" style={{ fontSize: 10, textTransform: 'uppercase' }}>{stage.key}</Text>
+                                    </Card>
+                                </Col>
                             ))}
-                        </Flex>
+                        </Row>
+                        <div style={{ marginTop: 24, textAlign: 'center' }}>
+                            <Text type="secondary" style={{ fontSize: 12 }}>Items currently flowing through production.</Text>
+                        </div>
                     </Card>
                 </Col>
             </Row>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Button, Flex, Modal } from 'antd';
+import { Button, Flex, App } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import PageHeader from '@/components/shared/PageHeader';
 import RoleTable from '@/components/roles/RoleTable';
@@ -9,6 +9,7 @@ import RoleForm from '@/components/roles/RoleForm';
 import apiClient from '@/lib/apiClient';
 
 export default function RolesPage() {
+    const { modal } = App.useApp();
     const [roles, setRoles] = useState([]);
     const [loading, setLoading] = useState(true);
     const [formOpen, setFormOpen] = useState(false);
@@ -42,7 +43,7 @@ export default function RolesPage() {
     };
 
     const handleDeleteClick = (role: any) => {
-        Modal.confirm({
+        modal.confirm({
             title: 'Delete Role',
             content: `Are you sure you want to delete the "${role.name}" role? This cannot be undone.`,
             okText: 'Delete',
