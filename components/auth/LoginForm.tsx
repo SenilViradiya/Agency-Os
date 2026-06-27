@@ -65,7 +65,7 @@ export default function LoginForm() {
 
             {error && (
                 <Alert
-                    message={error}
+                    title={error}
                     type="error"
                     showIcon
                     style={{ marginBottom: 24, borderRadius: 8 }}

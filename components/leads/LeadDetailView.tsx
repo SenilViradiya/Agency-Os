@@ -146,6 +146,8 @@ export default function LeadDetailView({ lead, onUpdate, onConvert }: LeadDetail
                                         { value: 'new', label: 'New' },
                                         { value: 'contacted', label: 'Contacted' },
                                         { value: 'qualified', label: 'Qualified' },
+                                        { value: 'proposal_sent', label: 'Proposal Sent' },
+                                        { value: 'negotiation', label: 'Negotiation' },
                                         { value: 'won', label: 'Won' },
                                         { value: 'lost', label: 'Lost' },
                                     ]}

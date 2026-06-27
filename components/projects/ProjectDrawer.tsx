@@ -55,6 +55,7 @@ export default function ProjectDrawer({ open, onClose, onSubmit, initialData, lo
                     projectManager: typeof initialData.projectManager === 'object' ? initialData.projectManager._id : initialData.projectManager,
                     teamMembers: initialData.teamMembers?.map((t: any) => typeof t === 'object' ? t._id : t) || [],
                     deadline: initialData.deadline ? dayjs(initialData.deadline) : null,
+                    startDate: initialData.startDate ? dayjs(initialData.startDate) : null,
                 });
             } else {
                 form.resetFields();
@@ -62,7 +63,8 @@ export default function ProjectDrawer({ open, onClose, onSubmit, initialData, lo
                     type: 'retainer',
                     status: 'planning',
                     priority: 'medium',
-                    contentQuota: { videos: 0, reels: 0, posts: 0 },
+                    contentQuota: { youtubeVideos: 0, reels: 0, shorts: 0, posts: 0, stories: 0, other: 0 },
+                    startDate: dayjs(),
                     totalTasks: 0,
                     completedTasks: 0,
                 });
@@ -73,6 +75,7 @@ export default function ProjectDrawer({ open, onClose, onSubmit, initialData, lo
     const onFinish = (values: any) => {
         onSubmit({
             ...values,
+            startDate: values.startDate ? values.startDate.toDate() : new Date(),
             deadline: values.deadline ? values.deadline.toDate() : null,
         });
     };
@@ -134,6 +137,14 @@ export default function ProjectDrawer({ open, onClose, onSubmit, initialData, lo
                     >
                         <Input placeholder="e.g. YouTube Content Pipeline" />
                     </Form.Item>
+
+                    <Form.Item 
+                        name="startDate" 
+                        label="Project Start Date" 
+                        rules={[{ required: true, message: 'Start date is required' }]}
+                    >
+                        <DatePicker style={{ width: '100%' }} format="DD MMM YYYY" />
+                    </Form.Item>
                 </div>
 
                 <div style={{ marginBottom: 24 }}>
@@ -164,7 +175,7 @@ export default function ProjectDrawer({ open, onClose, onSubmit, initialData, lo
                                     </Form.Item>
                                 </Col>
                                 <Col span={8}>
-                                    <Form.Item name={['contentQuota', 'videos']} label="Videos">
+                                    <Form.Item name={['contentQuota', 'youtubeVideos']} label="YouTube">
                                         <InputNumber style={{ width: '100%' }} min={0} />
                                     </Form.Item>
                                 </Col>
@@ -174,7 +185,22 @@ export default function ProjectDrawer({ open, onClose, onSubmit, initialData, lo
                                     </Form.Item>
                                 </Col>
                                 <Col span={8}>
-                                    <Form.Item name={['contentQuota', 'posts']} label="Posts">
+                                    <Form.Item name={['contentQuota', 'shorts']} label="Shorts">
+                                        <InputNumber style={{ width: '100%' }} min={0} />
+                                    </Form.Item>
+                                </Col>
+                                <Col span={8}>
+                                    <Form.Item name={['contentQuota', 'posts']} label="Static Posts">
+                                        <InputNumber style={{ width: '100%' }} min={0} />
+                                    </Form.Item>
+                                </Col>
+                                <Col span={8}>
+                                    <Form.Item name={['contentQuota', 'stories']} label="Stories">
+                                        <InputNumber style={{ width: '100%' }} min={0} />
+                                    </Form.Item>
+                                </Col>
+                                <Col span={8}>
+                                    <Form.Item name={['contentQuota', 'other']} label="Other">
                                         <InputNumber style={{ width: '100%' }} min={0} />
                                     </Form.Item>
                                 </Col>

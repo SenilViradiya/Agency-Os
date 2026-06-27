@@ -115,12 +115,17 @@ export async function POST(req: NextRequest) {
     }
     const projectNumber = `PRJ-${nextNumber.toString().padStart(4, '0')}`;
 
-    const projectData = {
+    const projectData: any = {
       ...body,
       organizationId,
       projectNumber,
-      createdBy: (user as any).id,
+      createdBy: user.id,
     };
+
+    // Calculate completion percentage if tasks are provided
+    if (typeof body.completedTasks === 'number' && typeof body.totalTasks === 'number' && body.totalTasks > 0) {
+      projectData.completionPercentage = Math.round((body.completedTasks / body.totalTasks) * 100);
+    }
 
     const project = await Project.create(projectData);
 

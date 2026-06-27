@@ -202,7 +202,7 @@ export default function LeadDrawer({ open, onClose, onSubmit, initialData, loadi
                                 </Select>
                             </Form.Item>
                         </Col>
-                        <Col span={24}>
+                        <Col span={12}>
                             <Form.Item name="priority" label="Priority">
                                 <Select>
                                     {PRIORITIES.map(p => (
@@ -211,6 +211,28 @@ export default function LeadDrawer({ open, onClose, onSubmit, initialData, loadi
                                 </Select>
                             </Form.Item>
                         </Col>
+                        <Col span={12}>
+                            <Form.Item name="status" label="Status" rules={[{ required: true }]}>
+                                <Select>
+                                    <Option value="new">New</Option>
+                                    <Option value="contacted">Contacted</Option>
+                                    <Option value="qualified">Qualified</Option>
+                                    <Option value="proposal_sent">Proposal Sent</Option>
+                                    <Option value="negotiation">Negotiation</Option>
+                                    <Option value="won">Won</Option>
+                                    <Option value="lost">Lost</Option>
+                                </Select>
+                            </Form.Item>
+                        </Col>
+                        <Form.Item noStyle shouldUpdate={(prev, curr) => prev.status !== curr.status}>
+                            {({ getFieldValue }) => getFieldValue('status') === 'lost' && (
+                                <Col span={24}>
+                                    <Form.Item name="lostReason" label="Reason for Loss">
+                                        <TextArea rows={2} placeholder="Why was this lead lost?" />
+                                    </Form.Item>
+                                </Col>
+                            )}
+                        </Form.Item>
                     </Row>
                 </div>
 
