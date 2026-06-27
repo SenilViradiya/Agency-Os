@@ -125,17 +125,17 @@ export default function PublishingPage() {
             <Row gutter={[24, 24]} style={{ marginBottom: 32 }}>
                 <Col xs={24} sm={12} lg={6}>
                     <Card styles={{ body: { padding: 20 } }} style={{ borderRadius: 12 }}>
-                        <Statistic title="Ready to Publish" value={stats.readyCount} prefix={<ClockCircleOutlined />} valueStyle={{ color: '#1890ff' }} />
+                        <Statistic title="Ready to Publish" value={stats.readyCount} prefix={<ClockCircleOutlined />} styles={{ content: { color: '#1890ff' } }} />
                     </Card>
                 </Col>
                 <Col xs={24} sm={12} lg={6}>
                     <Card styles={{ body: { padding: 20 } }} style={{ borderRadius: 12 }}>
-                        <Statistic title="Published This Week" value={stats.publishedThisWeek} prefix={<CheckCircleOutlined />} valueStyle={{ color: '#52c41a' }} />
+                        <Statistic title="Published This Week" value={stats.publishedThisWeek} prefix={<CheckCircleOutlined />} styles={{ content: { color: '#52c41a' } }} />
                     </Card>
                 </Col>
                 <Col xs={24} sm={12} lg={6}>
                     <Card styles={{ body: { padding: 20 } }} style={{ borderRadius: 12 }}>
-                        <Statistic title="Published This Month" value={stats.publishedThisMonth} prefix={<RocketOutlined />} valueStyle={{ color: '#722ed1' }} />
+                        <Statistic title="Published This Month" value={stats.publishedThisMonth} prefix={<RocketOutlined />} styles={{ content: { color: '#722ed1' } }} />
                     </Card>
                 </Col>
                 <Col xs={24} sm={12} lg={6}>

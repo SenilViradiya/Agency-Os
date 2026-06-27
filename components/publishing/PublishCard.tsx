@@ -55,7 +55,7 @@ export default function PublishCard({ item, onPublish }: PublishCardProps) {
 
                         <Title level={5} style={{ margin: '4px 0', fontSize: 16 }}>{title}</Title>
                         
-                        <Space split={<span style={{ color: '#d9d9d9' }}>|</span>} style={{ marginBottom: 8, fontSize: 12 }}>
+                        <Space separator={<span style={{ color: '#d9d9d9' }}>|</span>} style={{ marginBottom: 8, fontSize: 12 }}>
                             <Text type="secondary">{contentNumber}</Text>
                             <Text type="secondary">{clientId?.businessName} → {projectId?.name}</Text>
                         </Space>
@@ -68,7 +68,7 @@ export default function PublishCard({ item, onPublish }: PublishCardProps) {
                         </Flex>
                     </div>
 
-                    <Divider type="vertical" style={{ height: 'auto', margin: '0 20px' }} />
+                    <div style={{ width: 1, backgroundColor: '#f0f0f0', margin: '0 20px', height: 40, alignSelf: 'center' }} />
 
                     <div style={{ width: 220, textAlign: 'center' }}>
                         <Text type="secondary" style={{ fontSize: 11, display: 'block', textTransform: 'uppercase' }}>Planned Publish Date</Text>

@@ -167,17 +167,17 @@ export default function ApprovalsPage() {
                 <Row gutter={[24, 24]} style={{ marginBottom: 32 }}>
                     <Col xs={24} sm={12} lg={6}>
                         <Card styles={{ body: { padding: 20 } }} style={{ borderRadius: 12 }}>
-                            <Statistic title="Pending Review" value={stats.pending} prefix={<ClockCircleOutlined />} valueStyle={{ color: '#faad14' }} />
+                            <Statistic title="Pending Review" value={stats.pending} prefix={<ClockCircleOutlined />} styles={{ content: { color: '#faad14' } }} />
                         </Card>
                     </Col>
                     <Col xs={24} sm={12} lg={6}>
                         <Card styles={{ body: { padding: 20 } }} style={{ borderRadius: 12 }}>
-                            <Statistic title="Approved Today" value={stats.approvedToday} prefix={<CheckCircleOutlined />} valueStyle={{ color: '#52c41a' }} />
+                            <Statistic title="Approved Today" value={stats.approvedToday} prefix={<CheckCircleOutlined />} styles={{ content: { color: '#52c41a' } }} />
                         </Card>
                     </Col>
                     <Col xs={24} sm={12} lg={6}>
                         <Card styles={{ body: { padding: 20 } }} style={{ borderRadius: 12 }}>
-                            <Statistic title="Revisions Sent" value={stats.revisionsSent} prefix={<ExclamationCircleOutlined />} valueStyle={{ color: '#ff4d4f' }} />
+                            <Statistic title="Revisions Sent" value={stats.revisionsSent} prefix={<ExclamationCircleOutlined />} styles={{ content: { color: '#ff4d4f' } }} />
                         </Card>
                     </Col>
                     <Col xs={24} sm={12} lg={6}>
