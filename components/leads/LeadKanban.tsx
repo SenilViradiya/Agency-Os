@@ -10,7 +10,6 @@ import {
     useSensor,
     useSensors,
     DragStartEvent,
-    DragOverEvent,
     DragEndEvent,
 } from '@dnd-kit/core';
 import {
@@ -19,8 +18,10 @@ import {
     sortableKeyboardCoordinates,
     verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { Box, Typography, Badge, Paper, Stack } from '@mui/material';
+import { Typography, Badge, Card, Flex, Space } from 'antd';
 import LeadCard from './LeadCard';
+
+const { Text } = Typography;
 
 const COLUMNS = [
     { id: 'new', title: 'New' },
@@ -92,58 +93,43 @@ export default function LeadKanban({ leads, onStatusChange, onCardClick }: LeadK
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
         >
-            <Box sx={{
+            <div style={{
                 display: 'flex',
-                gap: 2,
-                pb: 2,
+                gap: 16,
+                paddingBottom: 16,
                 overflowX: 'auto',
                 minHeight: 'calc(100vh - 250px)',
-                '&::-webkit-scrollbar': { height: 8 },
-                '&::-webkit-scrollbar-thumb': { bgcolor: 'grey.300', borderRadius: 4 }
             }}>
                 {COLUMNS.map((column) => (
-                    <Box key={column.id} sx={{ minWidth: 280, width: 280 }}>
-                        <Paper
-                            sx={{
-                                p: 2,
-                                bgcolor: 'grey.50',
-                                borderRadius: 3,
-                                height: '100%',
-                                border: '1px solid',
-                                borderColor: 'grey.200',
+                    <div key={column.id} style={{ minWidth: 280, width: 280 }}>
+                        <Card
+                            size="small"
+                            styles={{
+                                body: { padding: '12px', backgroundColor: '#f5f5f5', borderRadius: '12px', minHeight: 'calc(100vh - 280px)' }
                             }}
+                            style={{ border: 'none', backgroundColor: 'transparent' }}
                         >
-                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, justifyContent: 'space-between' }}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                    <Typography variant="subtitle2" sx={{ fontWeight: 800, textTransform: 'uppercase', color: 'text.secondary', fontSize: '0.75rem' }}>
+                            <Flex justify="space-between" align="center" style={{ marginBottom: 16, padding: '0 4px' }}>
+                                <Space size="small">
+                                    <Text strong style={{ fontSize: 11, textTransform: 'uppercase', color: '#8c8c8c' }}>
                                         {column.title}
-                                    </Typography>
-                                    <Badge
-                                        badgeContent={groupedLeads[column.id].length}
-                                        color="primary"
-                                        sx={{
-                                            '& .MuiBadge-badge': {
-                                                position: 'static',
-                                                transform: 'none',
-                                                fontSize: '0.65rem',
-                                                height: 18,
-                                                minWidth: 18,
-                                                fontWeight: 800
-                                            }
-                                        }}
+                                    </Text>
+                                    <Badge 
+                                        count={groupedLeads[column.id].length} 
+                                        style={{ backgroundColor: '#6C63FF', fontSize: 10 }}
                                     />
-                                </Box>
-                                <Typography variant="caption" sx={{ fontWeight: 700, color: 'primary.main' }}>
+                                </Space>
+                                <Text style={{ fontSize: 11, fontWeight: 700, color: '#6C63FF' }}>
                                     ₹{groupedLeads[column.id].reduce((sum: number, l: any) => sum + (l.budget || 0), 0).toLocaleString('en-IN')}
-                                </Typography>
-                            </Box>
+                                </Text>
+                            </Flex>
 
                             <SortableContext
                                 id={column.id}
                                 items={groupedLeads[column.id].map((l: any) => l._id)}
                                 strategy={verticalListSortingStrategy}
                             >
-                                <Box sx={{ minHeight: 100 }}>
+                                <div style={{ minHeight: 100 }}>
                                     {groupedLeads[column.id].map((lead: any) => (
                                         <LeadCard
                                             key={lead._id}
@@ -151,12 +137,12 @@ export default function LeadKanban({ leads, onStatusChange, onCardClick }: LeadK
                                             onClick={onCardClick}
                                         />
                                     ))}
-                                </Box>
+                                </div>
                             </SortableContext>
-                        </Paper>
-                    </Box>
+                        </Card>
+                    </div>
                 ))}
-            </Box>
+            </div>
 
             <DragOverlay>
                 {activeLead ? (

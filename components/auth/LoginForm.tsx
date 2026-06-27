@@ -1,54 +1,34 @@
 'use client';
 
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import {
-    Box,
+    Card,
+    Form,
+    Input,
     Button,
-    TextField,
     Typography,
     Alert,
-    InputAdornment,
-    IconButton,
-    Card,
-    CardContent,
-    CircularProgress,
-} from '@mui/material';
-import { Visibility, VisibilityOff } from '@mui/icons-material';
+    Flex
+} from 'antd';
+import { MailOutlined, LockOutlined } from '@ant-design/icons';
 
-const loginSchema = z.object({
-    email: z.string().email('Invalid email address'),
-    password: z.string().min(6, 'Password must be at least 6 characters'),
-});
-
-type LoginFormValues = z.infer<typeof loginSchema>;
+const { Title, Text } = Typography;
 
 export default function LoginForm() {
     const router = useRouter();
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
-    const [showPassword, setShowPassword] = useState(false);
 
-    const {
-        register,
-        handleSubmit,
-        formState: { errors },
-    } = useForm<LoginFormValues>({
-        resolver: zodResolver(loginSchema),
-    });
-
-    const onSubmit = async (data: LoginFormValues) => {
+    const onFinish = async (values: any) => {
         setLoading(true);
         setError(null);
 
         try {
             const result = await signIn('credentials', {
-                email: data.email,
-                password: data.password,
+                email: values.email,
+                password: values.password,
                 redirect: false,
             });
 
@@ -66,70 +46,82 @@ export default function LoginForm() {
     };
 
     return (
-        <Card sx={{ maxWidth: 400, width: '100%', mx: 'auto', mt: 8 }}>
-            <CardContent sx={{ p: 4 }}>
-                <Box sx={{ textAlign: 'center', mb: 4 }}>
-                    <Typography variant="h4" sx={{ fontWeight: 800, color: 'primary.main', mb: 1 }}>
-                        AgencyOS
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                        Sign in to manage your agency
-                    </Typography>
-                </Box>
+        <Card
+            style={{
+                borderRadius: 16,
+                boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
+                border: 'none'
+            }}
+            styles={{ body: { padding: '40px' } }}
+        >
+            <div style={{ textAlign: 'center', marginBottom: 40 }}>
+                <Title level={2} style={{ margin: 0, fontWeight: 900, color: '#6C63FF' }}>
+                    AgencyOS
+                </Title>
+                <Text type="secondary" style={{ fontSize: 16 }}>
+                    Sign in to manage your agency
+                </Text>
+            </div>
 
-                {error && (
-                    <Alert severity="error" sx={{ mb: 3 }}>
-                        {error}
-                    </Alert>
-                )}
+            {error && (
+                <Alert
+                    title={error}
+                    type="error"
+                    showIcon
+                    style={{ marginBottom: 24, borderRadius: 8 }}
+                />
+            )}
 
-                <form onSubmit={handleSubmit(onSubmit)}>
-                    <TextField
-                        label="Email Address"
-                        {...register('email')}
-                        error={!!errors.email}
-                        helperText={errors.email?.message}
-                        margin="normal"
-                        autoComplete="email"
-                        disabled={loading}
+            <Form
+                layout="vertical"
+                onFinish={onFinish}
+                size="large"
+                requiredMark={false}
+            >
+                <Form.Item
+                    name="email"
+                    rules={[
+                        { required: true, message: 'Please enter your email' },
+                        { type: 'email', message: 'Invalid email address' }
+                    ]}
+                >
+                    <Input
+                        prefix={<MailOutlined style={{ color: '#bfbfbf' }} />}
+                        placeholder="Email Address"
+                        style={{ borderRadius: 8, height: 50 }}
                     />
+                </Form.Item>
 
-                    <TextField
-                        label="Password"
-                        type={showPassword ? 'text' : 'password'}
-                        {...register('password')}
-                        error={!!errors.password}
-                        helperText={errors.password?.message}
-                        margin="normal"
-                        disabled={loading}
-                        slotProps={{
-                            input: {
-                                endAdornment: (
-                                    <InputAdornment position="end">
-                                        <IconButton
-                                            onClick={() => setShowPassword(!showPassword)}
-                                            edge="end"
-                                        >
-                                            {showPassword ? <VisibilityOff /> : <Visibility />}
-                                        </IconButton>
-                                    </InputAdornment>
-                                ),
-                            }
-                        }}
+                <Form.Item
+                    name="password"
+                    rules={[{ required: true, message: 'Please enter your password' }]}
+                    style={{ marginBottom: 32 }}
+                >
+                    <Input.Password
+                        prefix={<LockOutlined style={{ color: '#bfbfbf' }} />}
+                        placeholder="Password"
+                        style={{ borderRadius: 8, height: 50 }}
                     />
+                </Form.Item>
 
+                <Form.Item style={{ marginBottom: 0 }}>
                     <Button
-                        type="submit"
-                        variant="contained"
-                        fullWidth
-                        size="large"
-                        disabled={loading}
-                        sx={{ mt: 3, height: 48 }}
+                        type="primary"
+                        htmlType="submit"
+                        block
+                        loading={loading}
+                        style={{
+                            height: 50,
+                            borderRadius: 8,
+                            fontWeight: 600,
+                            fontSize: 16,
+                            backgroundColor: '#6C63FF'
+                        }}
                     >
-                        {loading ? <CircularProgress size={24} color="inherit" /> : 'Sign In'}
+                        {loading ? 'Signing In...' : 'Sign In'}
                     </Button>
-                </form>
-            </CardContent>
+                </Form.Item>
+            </Form>
         </Card>
     );
 }

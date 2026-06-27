@@ -6,9 +6,10 @@ import { hasPermission } from '@/lib/auth';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     if (!session?.user) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
@@ -21,7 +22,7 @@ export async function GET(
 
     await dbConnect();
     const project = await Project.findOne({
-      _id: params.id,
+      _id: id,
       organizationId: (user as any).organizationId,
     })
       .populate('clientId', 'businessName email phone contactPerson industry')
@@ -41,9 +42,10 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     if (!session?.user) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
@@ -58,7 +60,7 @@ export async function PUT(
     const body = await req.json();
     const organizationId = (user as any).organizationId;
 
-    const project = await Project.findOne({ _id: params.id, organizationId });
+    const project = await Project.findOne({ _id: id, organizationId });
     if (!project) {
       return NextResponse.json({ success: false, error: 'Project not found' }, { status: 404 });
     }
@@ -86,9 +88,10 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     if (!session?.user) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
@@ -102,7 +105,7 @@ export async function DELETE(
     await dbConnect();
     const organizationId = (user as any).organizationId;
 
-    const project = await Project.findOne({ _id: params.id, organizationId });
+    const project = await Project.findOne({ _id: id, organizationId });
     if (!project) {
       return NextResponse.json({ success: false, error: 'Project not found' }, { status: 404 });
     }

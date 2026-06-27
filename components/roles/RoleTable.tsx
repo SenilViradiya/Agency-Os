@@ -1,18 +1,11 @@
 'use client';
 
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    Paper,
-    Chip,
-    IconButton,
-    Tooltip,
-} from '@mui/material';
-import { Edit as EditIcon, Delete as DeleteIcon, Lock as LockIcon } from '@mui/icons-material';
+import React from 'react';
+import { Table, Tag, Typography, Space, Button, Tooltip } from 'antd';
+import { EditOutlined, DeleteOutlined, LockOutlined } from '@ant-design/icons';
+import type { ColumnsType } from 'antd/es/table';
+
+const { Text } = Typography;
 
 interface RoleTableProps {
     roles: any[];
@@ -21,51 +14,79 @@ interface RoleTableProps {
 }
 
 export default function RoleTable({ roles, onEdit, onDelete }: RoleTableProps) {
+    const columns: ColumnsType<any> = [
+        {
+            title: 'Role Name',
+            dataIndex: 'name',
+            key: 'name',
+            render: (text) => <Text strong>{text}</Text>,
+        },
+        {
+            title: 'Slug',
+            dataIndex: 'slug',
+            key: 'slug',
+            render: (text) => <code style={{ backgroundColor: '#f5f5f5', padding: '2px 6px', borderRadius: 4 }}>{text}</code>,
+        },
+        {
+            title: 'Permissions Count',
+            key: 'permissions',
+            render: (_, record) => (
+                <Text>
+                    {record.permissions.reduce((acc: number, p: any) => acc + p.actions.length, 0)} actions
+                </Text>
+            ),
+        },
+        {
+            title: 'Type',
+            dataIndex: 'isSystem',
+            key: 'isSystem',
+            render: (isSystem) => (
+                isSystem ? (
+                    <Tag icon={<LockOutlined />} color="blue">System</Tag>
+                ) : (
+                    <Tag>Custom</Tag>
+                )
+            ),
+        },
+        {
+            title: 'Actions',
+            key: 'actions',
+            align: 'right',
+            render: (_, record) => (
+                <Space size="small">
+                    <Tooltip title="Edit Permissions">
+                        <Button 
+                            type="text" 
+                            icon={<EditOutlined style={{ color: '#1890ff' }} />} 
+                            onClick={() => onEdit(record)} 
+                        />
+                    </Tooltip>
+                    {!record.isSystem && (
+                        <Tooltip title="Delete">
+                            <Button 
+                                type="text" 
+                                danger 
+                                icon={<DeleteOutlined />} 
+                                onClick={() => onDelete(record)} 
+                            />
+                        </Tooltip>
+                    )}
+                </Space>
+            ),
+        },
+    ];
+
     return (
-        <TableContainer component={Paper}>
-            <Table>
-                <TableHead>
-                    <TableRow>
-                        <TableCell>Role Name</TableCell>
-                        <TableCell>Slug</TableCell>
-                        <TableCell>Permissions Count</TableCell>
-                        <TableCell>Type</TableCell>
-                        <TableCell align="right">Actions</TableCell>
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                    {roles.map((role) => (
-                        <TableRow key={role._id} hover>
-                            <TableCell sx={{ fontWeight: 600 }}>{role.name}</TableCell>
-                            <TableCell><code>{role.slug}</code></TableCell>
-                            <TableCell>
-                                {role.permissions.reduce((acc: number, p: any) => acc + p.actions.length, 0)} actions
-                            </TableCell>
-                            <TableCell>
-                                {role.isSystem ? (
-                                    <Chip label="System" size="small" icon={<LockIcon sx={{ fontSize: '14px !important' }} />} />
-                                ) : (
-                                    <Chip label="Custom" variant="outlined" size="small" />
-                                )}
-                            </TableCell>
-                            <TableCell align="right">
-                                <Tooltip title="Edit Permissions">
-                                    <IconButton onClick={() => onEdit(role)} size="small" color="primary">
-                                        <EditIcon fontSize="small" />
-                                    </IconButton>
-                                </Tooltip>
-                                {!role.isSystem && (
-                                    <Tooltip title="Delete">
-                                        <IconButton onClick={() => onDelete(role)} size="small" color="error">
-                                            <DeleteIcon fontSize="small" />
-                                        </IconButton>
-                                    </Tooltip>
-                                )}
-                            </TableCell>
-                        </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
-        </TableContainer>
+        <Table 
+            columns={columns} 
+            dataSource={roles} 
+            rowKey="_id"
+            pagination={{ pageSize: 10 }}
+            style={{ 
+                borderRadius: 12, 
+                overflow: 'hidden', 
+                boxShadow: '0 4px 20px rgba(0,0,0,0.05)' 
+            }}
+        />
     );
 }

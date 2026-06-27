@@ -1,27 +1,18 @@
 'use client';
 
+import React from 'react';
+import { Table, Typography, Space, Button, Avatar, Tag, Flex } from 'antd';
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    Paper,
-    IconButton,
-    Typography,
-    Box,
-    Avatar,
-    Chip,
-} from '@mui/material';
-import {
-    Visibility as ViewIcon,
-    Edit as EditIcon,
-    Delete as DeleteIcon,
-} from '@mui/icons-material';
+    EyeOutlined,
+    EditOutlined,
+    DeleteOutlined,
+} from '@ant-design/icons';
 import StatusChip from '@/components/shared/StatusChip';
 import dayjs from 'dayjs';
 import { useRouter } from 'next/navigation';
+import type { ColumnsType } from 'antd/es/table';
+
+const { Text } = Typography;
 
 interface ClientTableProps {
     clients: any[];
@@ -32,84 +23,109 @@ interface ClientTableProps {
 export default function ClientTable({ clients, onEdit, onDelete }: ClientTableProps) {
     const router = useRouter();
 
+    const columns: ColumnsType<any> = [
+        {
+            title: 'Client',
+            key: 'client',
+            render: (_, record) => (
+                <Flex align="center" gap={12}>
+                    <Avatar src={record.logo} shape="square" size={36}>
+                        {record.businessName.charAt(0)}
+                    </Avatar>
+                    <div>
+                        <Text strong style={{ display: 'block' }}>{record.businessName}</Text>
+                        <Text type="secondary" style={{ fontSize: 12 }}>{record.clientNumber}</Text>
+                    </div>
+                </Flex>
+            ),
+        },
+        {
+            title: 'Contact',
+            key: 'contact',
+            render: (_, record) => (
+                <div>
+                    <Text style={{ display: 'block' }}>{record.contactPerson}</Text>
+                    <Text type="secondary" style={{ fontSize: 12 }}>{record.email}</Text>
+                </div>
+            ),
+        },
+        {
+            title: 'Tier',
+            dataIndex: 'tier',
+            key: 'tier',
+            render: (tier) => {
+                const color = tier === 'enterprise' ? 'gold' : tier === 'premium' ? 'purple' : 'default';
+                return <Tag color={color} style={{ fontWeight: 700, textTransform: 'capitalize' }}>{tier}</Tag>;
+            },
+        },
+        {
+            title: 'Status',
+            dataIndex: 'status',
+            key: 'status',
+            render: (status) => <StatusChip status={status} />,
+        },
+        {
+            title: 'Services',
+            dataIndex: 'services',
+            key: 'services',
+            render: (services) => <Text type="secondary">{services?.length || 0} services</Text>,
+        },
+        {
+            title: 'Retainer',
+            dataIndex: 'monthlyRetainerValue',
+            key: 'monthlyRetainerValue',
+            render: (value) => <Text strong>₹{value?.toLocaleString('en-IN')}</Text>,
+        },
+        {
+            title: 'Manager',
+            dataIndex: 'assignedManager',
+            key: 'assignedManager',
+            render: (user) => (
+                <Flex align="center" gap={8}>
+                    <Avatar size="small" src={user?.avatar}>{user?.name?.charAt(0)}</Avatar>
+                    <Text style={{ fontSize: 13 }}>{user?.name}</Text>
+                </Flex>
+            ),
+        },
+        {
+            title: 'Actions',
+            key: 'actions',
+            align: 'right',
+            render: (_, record) => (
+                <Space size="small">
+                    <Button 
+                        type="text" 
+                        icon={<EyeOutlined />} 
+                        onClick={() => router.push(`/clients/${record._id}`)} 
+                    />
+                    <Button 
+                        type="text" 
+                        icon={<EditOutlined style={{ color: '#1890ff' }} />} 
+                        onClick={() => onEdit(record)} 
+                    />
+                    <Button 
+                        type="text" 
+                        danger 
+                        icon={<DeleteOutlined />} 
+                        onClick={() => onDelete(record._id)} 
+                    />
+                </Space>
+            ),
+        },
+    ];
+
     return (
-        <TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
-            <Table>
-                <TableHead sx={{ bgcolor: 'grey.50' }}>
-                    <TableRow>
-                        <TableCell sx={{ fontWeight: 700 }}>Client</TableCell>
-                        <TableCell sx={{ fontWeight: 700 }}>Contact</TableCell>
-                        <TableCell sx={{ fontWeight: 700 }}>Tier</TableCell>
-                        <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
-                        <TableCell sx={{ fontWeight: 700 }}>Services</TableCell>
-                        <TableCell sx={{ fontWeight: 700 }}>Retainer</TableCell>
-                        <TableCell sx={{ fontWeight: 700 }}>Manager</TableCell>
-                        <TableCell align="right" sx={{ fontWeight: 700 }}>Actions</TableCell>
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                    {clients.map((client) => (
-                        <TableRow key={client._id} hover>
-                            <TableCell>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                    <Avatar src={client.logo} variant="rounded" sx={{ width: 36, height: 36 }}>
-                                        {client.businessName.charAt(0)}
-                                    </Avatar>
-                                    <Box>
-                                        <Typography variant="body2" sx={{ fontWeight: 700 }}>{client.businessName}</Typography>
-                                        <Typography variant="caption" color="text.secondary">{client.clientNumber}</Typography>
-                                    </Box>
-                                </Box>
-                            </TableCell>
-                            <TableCell>
-                                <Typography variant="body2">{client.contactPerson}</Typography>
-                                <Typography variant="caption" color="text.secondary">{client.email}</Typography>
-                            </TableCell>
-                            <TableCell>
-                                <Chip
-                                    label={client.tier}
-                                    size="small"
-                                    sx={{
-                                        textTransform: 'capitalize',
-                                        fontWeight: 700,
-                                        bgcolor: client.tier === 'enterprise' ? 'warning.light' : client.tier === 'premium' ? 'secondary.light' : 'grey.200'
-                                    }}
-                                />
-                            </TableCell>
-                            <TableCell>
-                                <StatusChip status={client.status} />
-                            </TableCell>
-                            <TableCell>
-                                <Typography variant="caption">{client.services?.length || 0} services</Typography>
-                            </TableCell>
-                            <TableCell>
-                                <Typography variant="body2" sx={{ fontWeight: 700 }}>₹{client.monthlyRetainerValue?.toLocaleString('en-IN')}</Typography>
-                            </TableCell>
-                            <TableCell>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                    <Avatar src={client.assignedManager?.avatar} sx={{ width: 24, height: 24 }}>
-                                        {client.assignedManager?.name?.charAt(0)}
-                                    </Avatar>
-                                    <Typography variant="caption">{client.assignedManager?.name}</Typography>
-                                </Box>
-                            </TableCell>
-                            <TableCell align="right">
-                                <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 0.5 }}>
-                                    <IconButton size="small" onClick={() => router.push(`/clients/${client._id}`)}>
-                                        <ViewIcon fontSize="small" />
-                                    </IconButton>
-                                    <IconButton size="small" color="primary" onClick={() => onEdit(client)}>
-                                        <EditIcon fontSize="small" />
-                                    </IconButton>
-                                    <IconButton size="small" color="error" onClick={() => onDelete(client._id)}>
-                                        <DeleteIcon fontSize="small" />
-                                    </IconButton>
-                                </Box>
-                            </TableCell>
-                        </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
-        </TableContainer>
+        <Table 
+            columns={columns} 
+            dataSource={clients} 
+            rowKey="_id"
+            pagination={{ pageSize: 10 }}
+            scroll={{ x: 1000 }}
+            style={{ 
+                borderRadius: 12, 
+                overflow: 'hidden', 
+                boxShadow: '0 4px 20px rgba(0,0,0,0.05)' 
+            }}
+        />
     );
 }

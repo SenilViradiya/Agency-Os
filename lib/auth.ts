@@ -17,52 +17,43 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
       async authorize(credentials) {
         try {
-          console.log('Authorize started for:', credentials?.email);
+          console.log('[AUTH] Authorize started for:', credentials?.email);
+          if (!credentials?.email || !credentials?.password) {
+            return null;
+          }
+
           await dbConnect();
 
-          const user = await User.findOne({ email: credentials?.email } as any).populate({
+          const email = credentials.email.toLowerCase().trim();
+          const user = await User.findOne({ email }).select('+password').populate({
             path: 'role',
             model: Role
           });
           
-          if (!user) {
-            console.log('User not found:', credentials?.email);
-            throw new Error('Invalid email or password');
+          if (!user || !user.password) {
+            return null;
           }
 
-          if (!user.password) {
-            console.log('User has no password set');
-            throw new Error('Invalid email or password');
-          }
-
-          console.log('User found, comparing password...');
-          const isValid = await bcrypt.compare(credentials?.password as string, user.password);
+          const isValid = await bcrypt.compare(credentials.password as string, user.password);
           
-          if (!isValid) {
-            console.log('Invalid password for:', credentials?.email);
-            throw new Error('Invalid email or password');
+          if (!isValid || user.status !== 'active') {
+            return null;
           }
 
-          if (user.status !== 'active') {
-            console.log('User status not active:', user.status);
-            throw new Error('Your account is not active');
-          }
-
-          console.log('Login successful for:', user.email);
-          
           const roleData = user.role as any;
+          
           return {
             id: user._id.toString(),
             name: user.name,
             email: user.email,
             image: user.avatar,
-            organizationId: user.organizationId,
+            organizationId: user.organizationId?.toString() || '',
             role: roleData?.name || 'User',
-            permissions: roleData?.permissions || [],
+            permissions: roleData?.permissions ? JSON.parse(JSON.stringify(roleData.permissions)) : [],
           };
         } catch (error: any) {
-          console.error('Authorize error:', error.message);
-          throw error;
+          console.error('[AUTH] Authorize unexpected error:', error);
+          return null;
         }
       },
     }),
@@ -74,6 +65,7 @@ export function hasPermission(user: any, module: string, action: string): boolea
   if (!user || !user.permissions) return false;
   if (user.role === 'Super Admin') return true;
 
-  const modulePerm = user.permissions.find((p: any) => p.module === module);
+  const userPermissions = user.permissions as any[];
+  const modulePerm = userPermissions.find((p: any) => p.module === module);
   return modulePerm ? modulePerm.actions.includes(action) : false;
 }

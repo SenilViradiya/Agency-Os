@@ -1,50 +1,31 @@
 'use client';
 
+import React from 'react';
+import { Layout, Menu, Typography, Avatar, Divider, Button, Tooltip } from 'antd';
 import {
-    Box,
-    Drawer,
-    List,
-    ListItem,
-    ListItemButton,
-    ListItemIcon,
-    ListItemText,
-    Typography,
-    Divider,
-    Avatar,
-    Tooltip,
-    IconButton
-} from '@mui/material';
-import {
-    Dashboard as DashboardIcon,
-    People as PeopleIcon,
-    AdminPanelSettings as AdminPanelSettingsIcon,
-    Logout as LogoutIcon,
-    ChevronLeft as ChevronLeftIcon,
-    Assignment as LeadsIcon,
-    Business as ClientsIcon,
-    Work as ProjectsIcon,
-} from '@mui/icons-material';
+    DashboardOutlined as DashboardIcon,
+    TeamOutlined as PeopleIcon,
+    SafetyCertificateOutlined as AdminIcon,
+    LogoutOutlined as LogoutIcon,
+    SolutionOutlined as LeadsIcon,
+    ShopOutlined as ClientsIcon,
+    ProjectOutlined as ProjectsIcon,
+    RocketOutlined as FinanceIcon,
+    VideoCameraOutlined as MeetingsIcon,
+} from '@ant-design/icons';
 import { usePathname, useRouter } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
 
-const drawerWidth = 260;
+const { Sider } = Layout;
+const { Text, Title } = Typography;
 
-const menuItems = [
-    { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard', module: 'dashboard', action: 'read' },
-    { text: 'Leads', icon: <LeadsIcon />, path: '/leads', module: 'leads', action: 'read' },
-    { text: 'Clients', icon: <ClientsIcon />, path: '/clients', module: 'clients', action: 'read' },
-    { text: 'Projects', icon: <ProjectsIcon />, path: '/projects', module: 'projects', action: 'read' },
-    { text: 'Users', icon: <PeopleIcon />, path: '/users', module: 'users', action: 'read' },
-    { text: 'Roles', icon: <AdminPanelSettingsIcon />, path: '/roles', module: 'roles', action: 'read' },
-];
+interface SidebarProps {
+    collapsed: boolean;
+    onCollapse: (collapsed: boolean) => void;
+    isMobile: boolean;
+}
 
-const futureModules = [
-    { text: 'Finance', path: '#', module: 'finance' },
-    { text: 'Meeting', path: '#', module: 'meetings' },
-];
-
-
-export default function Sidebar({ open, toggleDrawer }: { open: boolean, toggleDrawer: () => void }) {
+export default function Sidebar({ collapsed, onCollapse, isMobile }: SidebarProps) {
     const pathname = usePathname();
     const router = useRouter();
     const { data: session } = useSession();
@@ -55,169 +36,126 @@ export default function Sidebar({ open, toggleDrawer }: { open: boolean, toggleD
 
     const currentRole = (session?.user as any)?.role;
 
-    const filteredMenuItems = menuItems.filter(item => {
-        if (item.path === '/dashboard') return true;
-        if (item.path === '/roles' && currentRole !== 'Super Admin') return false;
-        // Simple check for now, can be expanded with hasPermission helper
+    const menuItems = [
+        { key: '/dashboard', label: 'Dashboard', icon: <DashboardIcon />, role: 'all' },
+        { key: '/leads', label: 'Leads', icon: <LeadsIcon />, role: 'all' },
+        { key: '/clients', label: 'Clients', icon: <ClientsIcon />, role: 'all' },
+        { key: '/projects', label: 'Projects', icon: <ProjectsIcon />, role: 'all' },
+        { key: '/users', label: 'Users', icon: <PeopleIcon />, role: 'all' },
+        { key: '/roles', label: 'Roles', icon: <AdminIcon />, role: 'super-admin-only' },
+    ];
+
+    const filteredItems = menuItems.filter(item => {
+        if (item.role === 'super-admin-only' && currentRole !== 'Super Admin') return false;
         return true;
     });
 
+    const comingSoonItems = [
+        { key: 'finance', label: 'Finance', icon: <FinanceIcon />, disabled: true },
+        { key: 'meetings', label: 'Meetings', icon: <MeetingsIcon />, disabled: true },
+    ];
+
     return (
-        <Drawer
-            variant="permanent"
-            sx={{
-                width: open ? drawerWidth : 70,
-                flexShrink: 0,
-                '& .MuiDrawer-paper': {
-                    width: open ? drawerWidth : 70,
-                    boxSizing: 'border-box',
-                    backgroundColor: '#1A1A2E',
-                    color: 'white',
-                    transition: 'width 0.3s',
-                    overflowX: 'hidden',
-                    display: 'flex',
-                    flexDirection: 'column',
-                },
+        <Sider
+            collapsible
+            collapsed={collapsed}
+            onCollapse={onCollapse}
+            breakpoint="lg"
+            width={260}
+            collapsedWidth={80}
+            style={{
+                height: '100vh',
+                position: 'sticky',
+                top: 0,
+                left: 0,
+                backgroundColor: '#1A1A2E',
             }}
         >
-            <Box sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: open ? 'space-between' : 'center', height: 64 }}>
-                {open && (
-                    <Typography variant="h6" sx={{ fontWeight: 800, color: 'primary.main' }}>
-                        AgencyOS
-                    </Typography>
-                )}
-                <IconButton onClick={toggleDrawer} sx={{ color: 'white' }}>
-                    <ChevronLeftIcon sx={{ transform: open ? 'rotate(0deg)' : 'rotate(180deg)', transition: 'transform 0.3s' }} />
-                </IconButton>
-            </Box>
+            <div style={{ height: 64, display: 'flex', alignItems: 'center', padding: '0 24px', overflow: 'hidden' }}>
+                <Title level={4} style={{ color: '#6C63FF', margin: 0, display: collapsed ? 'none' : 'block' }}>
+                    AgencyOS
+                </Title>
+                {collapsed && <Text style={{ color: '#6C63FF', fontWeight: 800, fontSize: 20 }}>A</Text>}
+            </div>
 
-            <Divider sx={{ borderColor: 'rgba(255,255,255,0.1)' }} />
+            <Menu
+                theme="dark"
+                mode="inline"
+                selectedKeys={[pathname]}
+                items={filteredItems.map(item => ({
+                    key: item.key,
+                    icon: item.icon,
+                    label: item.label,
+                    onClick: () => router.push(item.key),
+                }))}
+                style={{ backgroundColor: 'transparent', borderRight: 0 }}
+            />
 
-            <List sx={{ px: 1, mt: 1 }}>
-                {filteredMenuItems.map((item) => (
-                    <ListItem key={item.text} disablePadding sx={{ display: 'block', mb: 0.5 }}>
-                        <ListItemButton
-                            onClick={() => router.push(item.path)}
-                            selected={pathname.startsWith(item.path)}
-                            sx={{
-                                minHeight: 48,
-                                justifyContent: open ? 'initial' : 'center',
-                                px: 2.5,
-                                borderRadius: 2,
-                                '&.Mui-selected': {
-                                    backgroundColor: 'primary.main',
-                                    '&:hover': {
-                                        backgroundColor: 'primary.dark',
-                                    },
-                                },
-                                '&:hover': {
-                                    backgroundColor: 'rgba(255,255,255,0.05)',
-                                },
-                            }}
-                        >
-                            <ListItemIcon
-                                sx={{
-                                    minWidth: 0,
-                                    mr: open ? 2 : 'auto',
-                                    justifyContent: 'center',
-                                    color: pathname.startsWith(item.path) ? 'white' : 'rgba(255,255,255,0.7)',
-                                }}
-                            >
-                                {item.icon}
-                            </ListItemIcon>
-                            <ListItemText
-                                primary={item.text}
-                                sx={{
-                                    opacity: open ? 1 : 0,
-                                    '& .MuiListItemText-primary': {
-                                        fontWeight: pathname.startsWith(item.path) ? 700 : 500,
-                                    }
-                                }}
-                            />
-                        </ListItemButton>
-                    </ListItem>
-                ))}
-
-                {open && (
-                    <Typography variant="overline" sx={{ px: 3, mt: 2, display: 'block', color: 'rgba(255,255,255,0.4)' }}>
+            {!collapsed && (
+                <div style={{ padding: '16px 24px' }}>
+                    <Text type="secondary" style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: 1 }}>
                         Coming Soon
-                    </Typography>
-                )}
+                    </Text>
+                </div>
+            )}
 
-                {futureModules.map((item) => (
-                    <ListItem key={item.text} disablePadding sx={{ display: 'block', opacity: 0.5 }}>
-                        <Tooltip title={!open ? item.text : "Coming Soon"} placement="right">
-                            <ListItemButton
-                                disabled
-                                sx={{
-                                    minHeight: 48,
-                                    justifyContent: open ? 'initial' : 'center',
-                                    px: 2.5,
-                                    borderRadius: 2,
-                                }}
-                            >
-                                <ListItemIcon
-                                    sx={{
-                                        minWidth: 0,
-                                        mr: open ? 2 : 'auto',
-                                        justifyContent: 'center',
-                                        color: 'rgba(255,255,255,0.3)',
-                                    }}
-                                >
-                                    <DashboardIcon />
-                                </ListItemIcon>
-                                <ListItemText primary={item.text} sx={{ opacity: open ? 1 : 0 }} />
-                            </ListItemButton>
-                        </Tooltip>
-                    </ListItem>
-                ))}
-            </List>
+            <Menu
+                theme="dark"
+                mode="inline"
+                items={comingSoonItems.map(item => ({
+                    key: item.key,
+                    icon: item.icon,
+                    label: item.label,
+                    disabled: true,
+                }))}
+                style={{ backgroundColor: 'transparent', borderRight: 0, opacity: 0.5 }}
+            />
 
-            <Box sx={{ mt: 'auto', p: 2 }}>
-                <Divider sx={{ borderColor: 'rgba(255,255,255,0.1)', mb: 2 }} />
-                <Box sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: open ? 'flex-start' : 'center',
-                    gap: 2,
-                    px: open ? 1 : 0
+            <div style={{ marginTop: 'auto', padding: '16px' }}>
+                <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: 12, 
+                    padding: '8px', 
+                    borderRadius: 8, 
+                    backgroundColor: 'rgba(255,255,255,0.05)',
+                    marginBottom: 12,
+                    justifyContent: collapsed ? 'center' : 'flex-start'
                 }}>
-                    <Avatar
-                        src={session?.user?.image || undefined}
-                        sx={{ width: 40, height: 40, bgcolor: 'primary.main', fontWeight: 700 }}
+                    <Avatar 
+                        src={session?.user?.image} 
+                        style={{ backgroundColor: '#6C63FF', minWidth: 32 }}
                     >
                         {session?.user?.name?.charAt(0)}
                     </Avatar>
-                    {open && (
-                        <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-                            <Typography variant="body2" sx={{ fontWeight: 700 }} noWrap>
+                    {!collapsed && (
+                        <div style={{ overflow: 'hidden' }}>
+                            <Text strong style={{ color: 'white', display: 'block' }} ellipsis>
                                 {session?.user?.name}
-                            </Typography>
-                            <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)' }} noWrap>
+                            </Text>
+                            <Text type="secondary" style={{ fontSize: 11 }}>
                                 {currentRole}
-                            </Typography>
-                        </Box>
+                            </Text>
+                        </div>
                     )}
-                </Box>
-                <ListItemButton
+                </div>
+                
+                <Button 
+                    type="text" 
+                    icon={<LogoutIcon />} 
+                    danger 
+                    block 
                     onClick={handleLogout}
-                    sx={{
-                        mt: 2,
-                        borderRadius: 2,
-                        color: '#FF6584',
-                        justifyContent: open ? 'initial' : 'center',
-                        px: 2.5,
-                        '&:hover': {
-                            backgroundColor: 'rgba(255, 101, 132, 0.1)',
-                        }
+                    style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: collapsed ? 'center' : 'flex-start',
+                        color: '#FF6584'
                     }}
                 >
-                    <ListItemIcon sx={{ minWidth: 0, mr: open ? 2 : 'auto', color: '#FF6584' }}>
-                        <LogoutIcon />
-                    </ListItemIcon>
-                    <ListItemText primary="Logout" sx={{ opacity: open ? 1 : 0 }} />
-                </ListItemButton>
-            </Box>
-        </Drawer>
+                    {!collapsed && 'Logout'}
+                </Button>
+            </div>
+        </Sider>
     );
 }

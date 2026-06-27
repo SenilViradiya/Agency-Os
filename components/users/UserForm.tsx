@@ -1,158 +1,143 @@
 'use client';
 
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import {
-    Box,
+    Form,
+    Input,
     Button,
-    TextField,
-    MenuItem,
-    Grid,
-    CircularProgress,
-} from '@mui/material';
+    Select,
+    Space,
+    Row,
+    Col
+} from 'antd';
 import { useEffect } from 'react';
 
-const userSchema = z.object({
-    name: z.string().min(2, 'Name is required'),
-    email: z.string().email('Invalid email address'),
-    password: z.string().min(6, 'Password must be at least 6 characters').optional().or(z.literal('')),
-    phone: z.string().optional(),
-    role: z.string().min(1, 'Role is required'),
-    department: z.string().min(1, 'Department is required'),
-    designation: z.string().min(1, 'Designation is required'),
-    status: z.enum(['active', 'inactive', 'suspended']),
-});
-
-type UserFormValues = z.infer<typeof userSchema>;
+const { Option } = Select;
 
 interface UserFormProps {
     initialData?: any;
     roles: any[];
-    onSubmit: (data: UserFormValues) => void;
+    onSubmit: (data: any) => void;
     loading: boolean;
     isEdit?: boolean;
 }
 
-export default function UserForm({ initialData, roles, onSubmit, loading, isEdit }: UserFormProps) {
-    const {
-        register,
-        handleSubmit,
-        reset,
-        formState: { errors },
-    } = useForm<UserFormValues>({
-        resolver: zodResolver(userSchema),
-        defaultValues: {
-            status: 'active',
-        },
-    });
+export default function UserForm({
+    initialData,
+    roles,
+    onSubmit,
+    loading,
+    isEdit = false,
+}: UserFormProps) {
+    const [form] = Form.useForm();
 
     useEffect(() => {
         if (initialData) {
-            reset({
+            form.setFieldsValue({
                 ...initialData,
                 role: initialData.role?._id || initialData.role,
-                password: '', // Don't populate password
+                password: '',
             });
         }
-    }, [initialData, reset]);
+    }, [initialData, form]);
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)}>
-            <Grid container spacing={2}>
-                <Grid size={{ xs: 12 }}>
-                    <TextField
+        <Form
+            form={form}
+            layout="vertical"
+            onFinish={onSubmit}
+            requiredMark="optional"
+            initialValues={{ status: 'active' }}
+        >
+            <Row gutter={24}>
+                <Col span={24}>
+                    <Form.Item
+                        name="name"
                         label="Full Name"
-                        {...register('name')}
-                        error={!!errors.name}
-                        helperText={errors.name?.message}
-                    />
-                </Grid>
-                <Grid size={{ xs: 12 }}>
-                    <TextField
+                        rules={[{ required: true, message: 'Please enter full name' }]}
+                    >
+                        <Input placeholder="John Doe" size="large" />
+                    </Form.Item>
+                </Col>
+                <Col span={24}>
+                    <Form.Item
+                        name="email"
                         label="Email Address"
-                        {...register('email')}
-                        error={!!errors.email}
-                        helperText={errors.email?.message}
-                        disabled={isEdit}
-                    />
-                </Grid>
+                        rules={[{ required: true, type: 'email', message: 'Please enter a valid email' }]}
+                    >
+                        <Input placeholder="john@example.com" disabled={isEdit} size="large" />
+                    </Form.Item>
+                </Col>
                 {!isEdit && (
-                    <Grid size={{ xs: 12 }}>
-                        <TextField
+                    <Col span={24}>
+                        <Form.Item
+                            name="password"
                             label="Password"
-                            type="password"
-                            {...register('password')}
-                            error={!!errors.password}
-                            helperText={errors.password?.message}
-                        />
-                    </Grid>
+                            rules={[{ required: true, min: 6, message: 'Password must be at least 6 characters' }]}
+                        >
+                            <Input.Password placeholder="Min 6 characters" size="large" />
+                        </Form.Item>
+                    </Col>
                 )}
-                <Grid size={{ xs: 12, sm: 6 }}>
-                    <TextField
-                        label="Phone"
-                        {...register('phone')}
-                        error={!!errors.phone}
-                        helperText={errors.phone?.message}
-                    />
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
-                    <TextField
-                        select
+                <Col xs={24} sm={12}>
+                    <Form.Item name="phone" label="Phone">
+                        <Input placeholder="Phone number" size="large" />
+                    </Form.Item>
+                </Col>
+                <Col xs={24} sm={12}>
+                    <Form.Item
+                        name="role"
                         label="Role"
-                        defaultValue=""
-                        {...register('role')}
-                        error={!!errors.role}
-                        helperText={errors.role?.message}
+                        rules={[{ required: true, message: 'Please select a role' }]}
                     >
-                        {roles.map((role) => (
-                            <MenuItem key={role._id} value={role._id}>
-                                {role.name}
-                            </MenuItem>
-                        ))}
-                    </TextField>
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
-                    <TextField
+                        <Select placeholder="Select role" size="large">
+                            {roles.map((role) => (
+                                <Option key={role._id} value={role._id}>
+                                    {role.name}
+                                </Option>
+                            ))}
+                        </Select>
+                    </Form.Item>
+                </Col>
+                <Col xs={24} sm={12}>
+                    <Form.Item
+                        name="department"
                         label="Department"
-                        {...register('department')}
-                        error={!!errors.department}
-                        helperText={errors.department?.message}
-                    />
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
-                    <TextField
-                        label="Designation"
-                        {...register('designation')}
-                        error={!!errors.designation}
-                        helperText={errors.designation?.message}
-                    />
-                </Grid>
-                <Grid size={{ xs: 12 }}>
-                    <TextField
-                        select
-                        label="Status"
-                        {...register('status')}
-                        error={!!errors.status}
-                        helperText={errors.status?.message}
+                        rules={[{ required: true, message: 'Department is required' }]}
                     >
-                        <MenuItem value="active">Active</MenuItem>
-                        <MenuItem value="inactive">Inactive</MenuItem>
-                        <MenuItem value="suspended">Suspended</MenuItem>
-                    </TextField>
-                </Grid>
-            </Grid>
+                        <Input placeholder="e.g. Creative" size="large" />
+                    </Form.Item>
+                </Col>
+                <Col xs={24} sm={12}>
+                    <Form.Item
+                        name="designation"
+                        label="Designation"
+                        rules={[{ required: true, message: 'Designation is required' }]}
+                    >
+                        <Input placeholder="e.g. Senior Editor" size="large" />
+                    </Form.Item>
+                </Col>
+                <Col span={24}>
+                    <Form.Item
+                        name="status"
+                        label="Status"
+                        rules={[{ required: true }]}
+                    >
+                        <Select size="large">
+                            <Option value="active">Active</Option>
+                            <Option value="inactive">Inactive</Option>
+                            <Option value="suspended">Suspended</Option>
+                        </Select>
+                    </Form.Item>
+                </Col>
+            </Row>
 
-            <Box sx={{ mt: 4, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-                <Button
-                    type="submit"
-                    variant="contained"
-                    disabled={loading}
-                    sx={{ minWidth: 120 }}
-                >
-                    {loading ? <CircularProgress size={24} /> : isEdit ? 'Update User' : 'Create User'}
-                </Button>
-            </Box>
-        </form>
+            <Form.Item style={{ marginBottom: 0, marginTop: 24, textAlign: 'right' }}>
+                <Space>
+                    <Button type="primary" htmlType="submit" loading={loading} size="large" style={{ minWidth: 150 }}>
+                        {isEdit ? 'Update User' : 'Create User'}
+                    </Button>
+                </Space>
+            </Form.Item>
+        </Form>
     );
 }

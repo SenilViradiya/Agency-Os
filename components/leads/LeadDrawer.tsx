@@ -1,56 +1,32 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import {
-    Drawer,
-    Box,
-    Typography,
-    TextField,
-    Button,
-    IconButton,
-    Stack,
-    MenuItem,
-    Chip,
-    Select,
-    FormControl,
-    InputLabel,
-    Grid,
-    CircularProgress,
-    Divider,
-} from '@mui/material';
-import { Close as CloseIcon } from '@mui/icons-material';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { useEffect } from 'react';
+import { 
+    Drawer, 
+    Form, 
+    Input, 
+    Button, 
+    Select, 
+    DatePicker, 
+    InputNumber, 
+    Space, 
+    Typography, 
+    Divider, 
+    Row, 
+    Col 
+} from 'antd';
+import { CloseOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import UserSelect from '@/components/shared/UserSelect';
 
-const leadSchema = z.object({
-    name: z.string().min(2, 'Name is required'),
-    businessName: z.string().min(2, 'Business Name is required'),
-    email: z.string().email('Invalid email address'),
-    phone: z.string().min(10, 'Phone number must be at least 10 digits'),
-    whatsappNumber: z.string().optional(),
-    source: z.enum(['whatsapp', 'referral', 'cold_email', 'cold_call', 'instagram', 'website', 'other']),
-    referredBy: z.string().optional(),
-    industry: z.string().optional(),
-    services: z.array(z.string()).default([]),
-    priority: z.enum(['low', 'medium', 'high']).default('medium'),
-    budget: z.number().min(0, 'Budget must be at least 0').default(0),
-    assignedTo: z.string().min(1, 'Please assign a user'),
-    followUpDate: z.any().optional(),
-    notes: z.string().optional(),
-});
-
-type LeadFormValues = z.infer<typeof leadSchema>;
+const { Title, Text } = Typography;
+const { Option } = Select;
+const { TextArea } = Input;
 
 interface LeadDrawerProps {
     open: boolean;
     onClose: () => void;
-    onSubmit: (data: LeadFormValues) => void;
+    onSubmit: (values: any) => void;
     initialData?: any;
     loading?: boolean;
 }
@@ -60,284 +36,240 @@ const SERVICES = ['YouTube Management', 'Reels', 'Shorts', 'Meta Ads', 'Google A
 const PRIORITIES = ['low', 'medium', 'high'];
 
 export default function LeadDrawer({ open, onClose, onSubmit, initialData, loading }: LeadDrawerProps) {
-    const {
-        register,
-        handleSubmit,
-        control,
-        watch,
-        reset,
-        formState: { errors },
-    } = useForm<LeadFormValues>({
-        resolver: zodResolver(leadSchema),
-        defaultValues: {
-            source: 'whatsapp',
-            priority: 'medium',
-            budget: 0,
-            services: [],
-        },
-    });
-
-    const sourceValue = watch('source');
+    const [form] = Form.useForm();
 
     useEffect(() => {
-        if (initialData) {
-            reset({
-                ...initialData,
-                followUpDate: initialData.followUpDate ? dayjs(initialData.followUpDate) : null,
-                assignedTo: typeof initialData.assignedTo === 'object' ? initialData.assignedTo._id : initialData.assignedTo,
-            });
-        } else {
-            reset({
-                source: 'whatsapp',
-                priority: 'medium',
-                budget: 0,
-                services: [],
-                name: '',
-                businessName: '',
-                email: '',
-                phone: '',
-            });
+        if (open) {
+            if (initialData) {
+                form.setFieldsValue({
+                    ...initialData,
+                    followUpDate: initialData.followUpDate ? dayjs(initialData.followUpDate) : null,
+                    assignedTo: typeof initialData.assignedTo === 'object' ? initialData.assignedTo._id : initialData.assignedTo,
+                });
+            } else {
+                form.resetFields();
+                form.setFieldsValue({
+                    source: 'whatsapp',
+                    priority: 'medium',
+                    budget: 0,
+                    services: [],
+                });
+            }
         }
-    }, [initialData, reset, open]);
+    }, [initialData, open, form]);
 
-    const handleFormSubmit = (data: LeadFormValues) => {
+    const onFinish = (values: any) => {
         onSubmit({
-            ...data,
-            followUpDate: data.followUpDate ? data.followUpDate.toDate() : null,
+            ...values,
+            followUpDate: values.followUpDate ? values.followUpDate.toDate() : null,
         });
     };
 
     return (
-        <Drawer anchor="right" open={open} onClose={onClose}>
-            <Box sx={{ width: 480, p: 0 }}>
-                <Box sx={{ p: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: 1, borderColor: 'divider' }}>
-                    <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                        {initialData ? 'Edit Lead' : 'Add New Lead'}
-                    </Typography>
-                    <IconButton onClick={onClose} size="small">
-                        <CloseIcon />
-                    </IconButton>
-                </Box>
+        <Drawer
+            title={initialData ? 'Edit Lead' : 'Add New Lead'}
+            placement="right"
+            onClose={onClose}
+            open={open}
+            size="default"
+            extra={
+                <Button type="text" icon={<CloseOutlined />} onClick={onClose} />
+            }
+            footer={
+                <div style={{ textAlign: 'right', padding: '10px 0' }}>
+                    <Space>
+                        <Button onClick={onClose} disabled={loading}>Cancel</Button>
+                        <Button 
+                            type="primary" 
+                            onClick={() => form.submit()} 
+                            loading={loading}
+                        >
+                            {initialData ? 'Update Lead' : 'Create Lead'}
+                        </Button>
+                    </Space>
+                </div>
+            }
+        >
+            <Form
+                form={form}
+                layout="vertical"
+                onFinish={onFinish}
+                requiredMark="optional"
+            >
+                <div style={{ marginBottom: 24 }}>
+                    <Text strong style={{ color: '#6C63FF', textTransform: 'uppercase', fontSize: 12 }}>
+                        1. Contact Information
+                    </Text>
+                    <Divider style={{ margin: '8px 0 16px 0' }} />
+                    <Row gutter={16}>
+                        <Col span={24}>
+                            <Form.Item
+                                name="name"
+                                label="Contact Name"
+                                rules={[{ required: true, message: 'Please enter contact name' }]}
+                            >
+                                <Input placeholder="e.g. John Doe" />
+                            </Form.Item>
+                        </Col>
+                        <Col span={24}>
+                            <Form.Item
+                                name="businessName"
+                                label="Business Name"
+                                rules={[{ required: true, message: 'Please enter business name' }]}
+                            >
+                                <Input placeholder="e.g. Acme Corp" />
+                            </Form.Item>
+                        </Col>
+                        <Col span={24}>
+                            <Form.Item
+                                name="email"
+                                label="Email Address"
+                                rules={[
+                                    { required: true, message: 'Please enter email' },
+                                    { type: 'email', message: 'Please enter a valid email' }
+                                ]}
+                            >
+                                <Input placeholder="john@example.com" />
+                            </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                            <Form.Item
+                                name="phone"
+                                label="Phone Number"
+                                rules={[{ required: true, message: 'Please enter phone number' }]}
+                            >
+                                <Input placeholder="10-digit number" />
+                            </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                            <Form.Item
+                                name="whatsappNumber"
+                                label="WhatsApp (Optional)"
+                            >
+                                <Input placeholder="WhatsApp number" />
+                            </Form.Item>
+                        </Col>
+                    </Row>
+                </div>
 
-                <Box component="form" onSubmit={handleSubmit(handleFormSubmit)} sx={{ p: 3 }}>
-                    <Stack spacing={3}>
-                        <Box>
-                            <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 700, color: 'primary.main' }}>
-                                1. Contact Information
-                            </Typography>
-                            <Grid container spacing={2}>
-                                <Grid item xs={12}>
-                                    <TextField
-                                        label="Contact Name"
-                                        fullWidth
-                                        {...register('name')}
-                                        error={!!errors.name}
-                                        helperText={errors.name?.message}
-                                    />
-                                </Grid>
-                                <Grid item xs={12}>
-                                    <TextField
-                                        label="Business Name"
-                                        fullWidth
-                                        {...register('businessName')}
-                                        error={!!errors.businessName}
-                                        helperText={errors.businessName?.message}
-                                    />
-                                </Grid>
-                                <Grid item xs={12}>
-                                    <TextField
-                                        label="Email Address"
-                                        fullWidth
-                                        {...register('email')}
-                                        error={!!errors.email}
-                                        helperText={errors.email?.message}
-                                    />
-                                </Grid>
-                                <Grid item xs={6}>
-                                    <TextField
-                                        label="Phone Number"
-                                        fullWidth
-                                        {...register('phone')}
-                                        error={!!errors.phone}
-                                        helperText={errors.phone?.message}
-                                    />
-                                </Grid>
-                                <Grid item xs={6}>
-                                    <TextField
-                                        label="WhatsApp (Optional)"
-                                        fullWidth
-                                        {...register('whatsappNumber')}
-                                    />
-                                </Grid>
-                            </Grid>
-                        </Box>
-
-                        <Divider />
-
-                        <Box>
-                            <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 700, color: 'primary.main' }}>
-                                2. Lead Information
-                            </Typography>
-                            <Grid container spacing={2}>
-                                <Grid item xs={6}>
-                                    <FormControl fullWidth error={!!errors.source}>
-                                        <InputLabel>Source</InputLabel>
-                                        <Controller
-                                            name="source"
-                                            control={control}
-                                            render={({ field }) => (
-                                                <Select {...field} label="Source">
-                                                    {SOURCES.map(source => (
-                                                        <MenuItem key={source} value={source} sx={{ textTransform: 'capitalize' }}>
-                                                            {source.replace('_', ' ')}
-                                                        </MenuItem>
-                                                    ))}
-                                                </Select>
-                                            )}
-                                        />
-                                    </FormControl>
-                                </Grid>
-                                <Grid item xs={6}>
-                                    <TextField
+                <div style={{ marginBottom: 24 }}>
+                    <Text strong style={{ color: '#6C63FF', textTransform: 'uppercase', fontSize: 12 }}>
+                        2. Lead Information
+                    </Text>
+                    <Divider style={{ margin: '8px 0 16px 0' }} />
+                    <Row gutter={16}>
+                        <Col span={12}>
+                            <Form.Item
+                                name="source"
+                                label="Source"
+                                rules={[{ required: true }]}
+                            >
+                                <Select>
+                                    {SOURCES.map(s => (
+                                        <Option key={s} value={s}>{s.replace('_', ' ')}</Option>
+                                    ))}
+                                </Select>
+                            </Form.Item>
+                        </Col>
+                        <Form.Item noStyle shouldUpdate={(prev, curr) => prev.source !== curr.source}>
+                            {({ getFieldValue }) => (
+                                <Col span={12}>
+                                    <Form.Item
+                                        name="referredBy"
                                         label="Referred By"
-                                        fullWidth
-                                        disabled={sourceValue !== 'referral'}
-                                        {...register('referredBy')}
-                                    />
-                                </Grid>
-                                <Grid item xs={6}>
-                                    <TextField
-                                        label="Industry"
-                                        fullWidth
-                                        {...register('industry')}
-                                    />
-                                </Grid>
-                                <Grid item xs={6}>
-                                    <TextField
-                                        label="Budget (₹)"
-                                        type="number"
-                                        fullWidth
-                                        {...register('budget', { valueAsNumber: true })}
-                                        error={!!errors.budget}
-                                    />
-                                </Grid>
-                                <Grid item xs={12}>
-                                    <FormControl fullWidth>
-                                        <InputLabel>Services</InputLabel>
-                                        <Controller
-                                            name="services"
-                                            control={control}
-                                            render={({ field }) => (
-                                                <Select
-                                                    {...field}
-                                                    multiple
-                                                    label="Services"
-                                                    renderValue={(selected) => (
-                                                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                                                            {selected.map((value) => (
-                                                                <Chip key={value} label={value} size="small" />
-                                                            ))}
-                                                        </Box>
-                                                    )}
-                                                >
-                                                    {SERVICES.map((service) => (
-                                                        <MenuItem key={service} value={service}>
-                                                            {service}
-                                                        </MenuItem>
-                                                    ))}
-                                                </Select>
-                                            )}
-                                        />
-                                    </FormControl>
-                                </Grid>
-                                <Grid item xs={12}>
-                                    <FormControl fullWidth>
-                                        <InputLabel>Priority</InputLabel>
-                                        <Controller
-                                            name="priority"
-                                            control={control}
-                                            render={({ field }) => (
-                                                <Select {...field} label="Priority">
-                                                    {PRIORITIES.map(p => (
-                                                        <MenuItem key={p} value={p} sx={{ textTransform: 'capitalize' }}>
-                                                            {p}
-                                                        </MenuItem>
-                                                    ))}
-                                                </Select>
-                                            )}
-                                        />
-                                    </FormControl>
-                                </Grid>
-                            </Grid>
-                        </Box>
+                                    >
+                                        <Input disabled={getFieldValue('source') !== 'referral'} placeholder="Referrer name" />
+                                    </Form.Item>
+                                </Col>
+                            )}
+                        </Form.Item>
+                        <Col span={12}>
+                            <Form.Item name="industry" label="Industry">
+                                <Input placeholder="e.g. Real Estate" />
+                            </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                            <Form.Item name="budget" label="Budget (₹)">
+                                <InputNumber style={{ width: '100%' }} min={0} formatter={value => `₹ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} />
+                            </Form.Item>
+                        </Col>
+                        <Col span={24}>
+                            <Form.Item name="services" label="Services">
+                                <Select mode="multiple" placeholder="Select services">
+                                    {SERVICES.map(s => (
+                                        <Option key={s} value={s}>{s}</Option>
+                                    ))}
+                                </Select>
+                            </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                            <Form.Item name="priority" label="Priority">
+                                <Select>
+                                    {PRIORITIES.map(p => (
+                                        <Option key={p} value={p} style={{ textTransform: 'capitalize' }}>{p}</Option>
+                                    ))}
+                                </Select>
+                            </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                            <Form.Item name="status" label="Status" rules={[{ required: true }]}>
+                                <Select>
+                                    <Option value="new">New</Option>
+                                    <Option value="contacted">Contacted</Option>
+                                    <Option value="qualified">Qualified</Option>
+                                    <Option value="proposal_sent">Proposal Sent</Option>
+                                    <Option value="negotiation">Negotiation</Option>
+                                    <Option value="won">Won</Option>
+                                    <Option value="lost">Lost</Option>
+                                </Select>
+                            </Form.Item>
+                        </Col>
+                        <Form.Item noStyle shouldUpdate={(prev, curr) => prev.status !== curr.status}>
+                            {({ getFieldValue }) => getFieldValue('status') === 'lost' && (
+                                <Col span={24}>
+                                    <Form.Item name="lostReason" label="Reason for Loss">
+                                        <TextArea rows={2} placeholder="Why was this lead lost?" />
+                                    </Form.Item>
+                                </Col>
+                            )}
+                        </Form.Item>
+                    </Row>
+                </div>
 
-                        <Divider />
+                <div style={{ marginBottom: 24 }}>
+                    <Text strong style={{ color: '#6C63FF', textTransform: 'uppercase', fontSize: 12 }}>
+                        3. Assignment & Follow-up
+                    </Text>
+                    <Divider style={{ margin: '8px 0 16px 0' }} />
+                    <Row gutter={16}>
+                        <Col span={24} style={{ marginBottom: 24 }}>
+                            <Form.Item
+                                name="assignedTo"
+                                rules={[{ required: true, message: 'Please assign to a user' }]}
+                            >
+                                <UserSelect 
+                                    label="Assign To" 
+                                />
+                            </Form.Item>
+                        </Col>
+                        <Col span={24}>
+                            <Form.Item name="followUpDate" label="Next Follow-up">
+                                <DatePicker style={{ width: '100%' }} format="DD MMM YYYY" />
+                            </Form.Item>
+                        </Col>
+                    </Row>
+                </div>
 
-                        <Box>
-                            <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 700, color: 'primary.main' }}>
-                                3. Assignment & Follow-up
-                            </Typography>
-                            <Grid container spacing={2}>
-                                <Grid item xs={12}>
-                                    <Controller
-                                        name="assignedTo"
-                                        control={control}
-                                        render={({ field }) => (
-                                            <UserSelect
-                                                label="Assign To"
-                                                value={field.value}
-                                                onChange={field.onChange}
-                                                error={!!errors.assignedTo}
-                                                helperText={errors.assignedTo?.message}
-                                            />
-                                        )}
-                                    />
-                                </Grid>
-                                <Grid item xs={12}>
-                                    <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                        <Controller
-                                            name="followUpDate"
-                                            control={control}
-                                            render={({ field }) => (
-                                                <DatePicker
-                                                    label="Next Follow-up"
-                                                    sx={{ width: '100%' }}
-                                                    value={field.value}
-                                                    onChange={field.onChange}
-                                                />
-                                            )}
-                                        />
-                                    </LocalizationProvider>
-                                </Grid>
-                            </Grid>
-                        </Box>
-
-                        <Divider />
-
-                        <Box>
-                            <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 700, color: 'primary.main' }}>
-                                4. Additional Notes
-                            </Typography>
-                            <TextField
-                                label="Notes"
-                                multiline
-                                rows={4}
-                                fullWidth
-                                {...register('notes')}
-                            />
-                        </Box>
-
-                        <Box sx={{ pt: 2, pb: 4, display: 'flex', gap: 2 }}>
-                            <Button fullWidth variant="outlined" onClick={onClose} disabled={loading}>
-                                Cancel
-                            </Button>
-                            <Button fullWidth variant="contained" type="submit" disabled={loading}>
-                                {loading ? <CircularProgress size={24} /> : (initialData ? 'Update Lead' : 'Create Lead')}
-                            </Button>
-                        </Box>
-                    </Stack>
-                </Box>
-            </Box>
+                <div>
+                    <Text strong style={{ color: '#6C63FF', textTransform: 'uppercase', fontSize: 12 }}>
+                        4. Additional Notes
+                    </Text>
+                    <Divider style={{ margin: '8px 0 16px 0' }} />
+                    <Form.Item name="notes" label="Notes">
+                        <TextArea rows={4} placeholder="Any specific requirements or context..." />
+                    </Form.Item>
+                </div>
+            </Form>
         </Drawer>
     );
 }

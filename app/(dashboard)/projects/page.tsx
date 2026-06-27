@@ -1,28 +1,27 @@
 'use client';
 
 import { useState, useEffect, useCallback, Suspense } from 'react';
-import {
-    Box,
-    Typography,
-    Button,
-    Stack,
-    TextField,
-    InputAdornment,
-    CircularProgress,
-    MenuItem,
-    FormControl,
-    Select,
-    InputLabel,
-} from '@mui/material';
-import {
-    Add as AddIcon,
-    Search as SearchIcon,
-} from '@mui/icons-material';
+import { 
+    Button, 
+    Input, 
+    Select, 
+    Space, 
+    Typography, 
+    Flex, 
+    Spin 
+} from 'antd';
+import { 
+    PlusOutlined, 
+    SearchOutlined 
+} from '@ant-design/icons';
 import ProjectTable from '@/components/projects/ProjectTable';
 import ProjectDrawer from '@/components/projects/ProjectDrawer';
 import PageHeader from '@/components/shared/PageHeader';
 import apiClient from '@/lib/apiClient';
 import { useSearchParams } from 'next/navigation';
+
+const { Text } = Typography;
+const { Option } = Select;
 
 function ProjectsContent() {
     const searchParams = useSearchParams();
@@ -103,7 +102,7 @@ function ProjectsContent() {
     };
 
     const handleDeleteProject = async (id: string) => {
-        if (!confirm('Are you sure you want to cancel this project?')) return;
+        if (!window.confirm('Are you sure you want to cancel this project?')) return;
         try {
             const res = await apiClient.delete(`/projects/${id}`);
             if (res.data.success) {
@@ -115,58 +114,54 @@ function ProjectsContent() {
     };
 
     return (
-        <Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 4 }}>
+        <div>
+            <Flex justify="space-between" align="flex-start" style={{ marginBottom: 32 }}>
                 <PageHeader 
                     title="Projects" 
                     subtitle={`Track delivery and progress. Total ${stats.total} projects.`} 
                 />
                 <Button
-                    variant="contained"
-                    startIcon={<AddIcon />}
+                    type="primary"
+                    size="large"
+                    icon={<PlusOutlined />}
                     onClick={() => { setSelectedProject(null); setDrawerOpen(true); }}
+                    style={{ height: 45, fontWeight: 600, borderRadius: 8 }}
                 >
                     New Project
                 </Button>
-            </Box>
+            </Flex>
 
-            <Box sx={{ mb: 3, display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center', justifyContent: 'space-between' }}>
-                <Stack direction="row" spacing={2} sx={{ flexGrow: 1 }}>
-                    <TextField
+            <Flex justify="space-between" align="center" style={{ marginBottom: 24 }} wrap="wrap" gap={16}>
+                <Space size="middle">
+                    <Input
                         placeholder="Search projects..."
-                        size="small"
+                        prefix={<SearchOutlined style={{ color: '#bfbfbf' }} />}
                         value={filters.search}
                         onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
-                        sx={{ minWidth: 250 }}
-                        InputProps={{
-                            startAdornment: (
-                                <InputAdornment position="start">
-                                    <SearchIcon fontSize="small" />
-                                </InputAdornment>
-                            ),
-                        }}
+                        style={{ width: 300, borderRadius: 8 }}
+                        size="large"
                     />
-                    <FormControl size="small" sx={{ minWidth: 150 }}>
-                        <InputLabel>All Status</InputLabel>
-                        <Select
-                            value={filters.status}
-                            label="All Status"
-                            onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
-                        >
-                            <MenuItem value="">All Status</MenuItem>
-                            <MenuItem value="planning">Planning</MenuItem>
-                            <MenuItem value="active">Active</MenuItem>
-                            <MenuItem value="completed">Completed</MenuItem>
-                        </Select>
-                    </FormControl>
-                </Stack>
-            </Box>
+                    <Select
+                        placeholder="All Status"
+                        value={filters.status || undefined}
+                        onChange={(val) => setFilters(prev => ({ ...prev, status: val || '' }))}
+                        style={{ width: 160 }}
+                        size="large"
+                        allowClear
+                    >
+                        <Option value="planning">Planning</Option>
+                        <Option value="active">Active</Option>
+                        <Option value="completed">Completed</Option>
+                        <Option value="on_hold">On Hold</Option>
+                        <Option value="cancelled">Cancelled</Option>
+                    </Select>
+                </Space>
+            </Flex>
 
             {loading && projects.length === 0 ? (
-                <Box sx={{ textAlign: 'center', py: 8 }}>
-                    <CircularProgress />
-                    <Typography sx={{ mt: 2 }} color="text.secondary">Loading projects...</Typography>
-                </Box>
+                <div style={{ textAlign: 'center', padding: '100px 0' }}>
+                    <Spin size="large" description="Loading projects..." />
+                </div>
             ) : (
                 <ProjectTable 
                     projects={projects} 
@@ -182,13 +177,13 @@ function ProjectsContent() {
                 initialData={selectedProject}
                 loading={loading}
             />
-        </Box>
+        </div>
     );
 }
 
 export default function ProjectsPage() {
     return (
-        <Suspense fallback={<CircularProgress />}>
+        <Suspense fallback={<div style={{ textAlign: 'center', padding: '100px 0' }}><Spin size="large" /></div>}>
             <ProjectsContent />
         </Suspense>
     );

@@ -1,37 +1,45 @@
 'use client';
 
-import { AppBar, Toolbar, Typography, Box, IconButton, useTheme, useMediaQuery } from '@mui/material';
-import { Menu as MenuIcon } from '@mui/icons-material';
+import React from 'react';
+import { Layout, Button, Typography, Space } from 'antd';
+import { MenuUnfoldOutlined, MenuFoldOutlined, BellOutlined } from '@ant-design/icons';
 
-export default function Topbar({ toggleDrawer }: { toggleDrawer: () => void }) {
-    const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+const { Header } = Layout;
+const { Title } = Typography;
 
+interface TopbarProps {
+    collapsed: boolean;
+    onToggle: () => void;
+}
+
+export default function Topbar({ collapsed, onToggle }: TopbarProps) {
     return (
-        <AppBar
-            position="fixed"
-            sx={{
-                zIndex: (theme) => theme.zIndex.drawer + 1,
-                backgroundColor: 'white',
-                color: 'text.primary',
-                boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
-                display: isMobile ? 'block' : 'none'
-            }}
-        >
-            <Toolbar>
-                <IconButton
-                    color="inherit"
-                    aria-label="open drawer"
-                    edge="start"
-                    onClick={toggleDrawer}
-                    sx={{ mr: 2 }}
-                >
-                    <MenuIcon />
-                </IconButton>
-                <Typography variant="h6" noWrap sx={{ fontWeight: 800, color: 'primary.main' }}>
-                    AgencyOS
-                </Typography>
-            </Toolbar>
-        </AppBar>
+        <Header style={{ 
+            padding: '0 24px', 
+            background: '#fff', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'space-between',
+            boxShadow: '0 1px 4px rgba(0,21,41,.08)',
+            zIndex: 1,
+            position: 'sticky',
+            top: 0
+        }}>
+            <Space size="large">
+                <Button
+                    type="text"
+                    icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+                    onClick={onToggle}
+                    style={{ fontSize: '16px', width: 64, height: 64 }}
+                />
+            </Space>
+
+            <Space size="middle">
+                <Button type="text" icon={<BellOutlined />} style={{ fontSize: '18px' }} />
+                <div style={{ width: 32, height: 32, borderRadius: '50%', backgroundColor: '#f0f2f5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <BellOutlined style={{ color: '#8c8c8c' }} />
+                </div>
+            </Space>
+        </Header>
     );
 }

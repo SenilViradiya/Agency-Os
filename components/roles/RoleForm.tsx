@@ -1,24 +1,21 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import {
-    Box,
-    Typography,
-    TextField,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    Checkbox,
+import { 
+    Modal, 
+    Form, 
+    Input, 
+    Table, 
+    Checkbox, 
+    Typography, 
+    Row, 
+    Col, 
     Button,
-    CircularProgress,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-} from '@mui/material';
+    Space
+} from 'antd';
+import type { ColumnsType } from 'antd/es/table';
+
+const { Text } = Typography;
 
 const modules = [
     'leads', 'clients', 'projects', 'tasks', 'scripts', 'shoots', 'editing',
@@ -26,7 +23,7 @@ const modules = [
     'users', 'roles', 'hr', 'finance', 'meetings', 'assets', 'vendors'
 ];
 
-const actions = ['read', 'create', 'update', 'delete'];
+const actionsList = ['read', 'create', 'update', 'delete'];
 
 interface RoleFormProps {
     open: boolean;
@@ -37,21 +34,23 @@ interface RoleFormProps {
 }
 
 export default function RoleForm({ open, onClose, onSubmit, initialData, loading }: RoleFormProps) {
-    const [name, setName] = useState('');
-    const [slug, setSlug] = useState('');
+    const [form] = Form.useForm();
     const [permissions, setPermissions] = useState<any[]>([]);
 
     useEffect(() => {
-        if (initialData) {
-            setName(initialData.name);
-            setSlug(initialData.slug);
-            setPermissions(initialData.permissions || []);
-        } else {
-            setName('');
-            setSlug('');
-            setPermissions(modules.map(m => ({ module: m, actions: [] })));
+        if (open) {
+            if (initialData) {
+                form.setFieldsValue({
+                    name: initialData.name,
+                    slug: initialData.slug,
+                });
+                setPermissions(initialData.permissions || []);
+            } else {
+                form.resetFields();
+                setPermissions(modules.map(m => ({ module: m, actions: [] })));
+            }
         }
-    }, [initialData, open]);
+    }, [initialData, open, form]);
 
     const handleTogglePermission = (module: string, action: string) => {
         setPermissions(prev => {
@@ -69,77 +68,83 @@ export default function RoleForm({ open, onClose, onSubmit, initialData, loading
     };
 
     const handleSave = () => {
-        onSubmit({ name, slug, permissions });
+        form.validateFields().then(values => {
+            onSubmit({ ...values, permissions });
+        });
     };
 
-    return (
-        <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-            <DialogTitle>{initialData ? 'Edit Role' : 'Add New Role'}</DialogTitle>
-            <DialogContent>
-                <Box sx={{ mt: 2, display: 'flex', gap: 2, mb: 4 }}>
-                    <TextField
-                        label="Role Name"
-                        fullWidth
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        disabled={initialData?.isSystem}
-                    />
-                    <TextField
-                        label="Slug"
-                        fullWidth
-                        value={slug}
-                        onChange={(e) => setSlug(e.target.value)}
-                        disabled={initialData} // Slug shouldn't change after creation
-                    />
-                </Box>
+    const columns: ColumnsType<any> = [
+        {
+            title: 'Module',
+            dataIndex: 'module',
+            key: 'module',
+            render: (text) => <Text style={{ textTransform: 'capitalize' }}>{text}</Text>,
+        },
+        ...actionsList.map(action => ({
+            title: action.toUpperCase(),
+            key: action,
+            align: 'center' as const,
+            render: (_: any, record: any) => (
+                <Checkbox
+                    checked={permissions.find(p => p.module === record.module)?.actions.includes(action) || false}
+                    onChange={() => handleTogglePermission(record.module, action)}
+                />
+            ),
+        })),
+    ];
 
-                <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>
-                    Permissions Matrix
-                </Typography>
-                <TableContainer sx={{ maxHeight: 400 }}>
-                    <Table stickyHeader size="small">
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>Module</TableCell>
-                                {actions.map(action => (
-                                    <TableCell key={action} align="center">{action.toUpperCase()}</TableCell>
-                                ))}
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {modules.map(module => {
-                                const modulePerm = permissions.find(p => p.module === module);
-                                return (
-                                    <TableRow key={module}>
-                                        <TableCell sx={{ textTransform: 'capitalize' }}>{module}</TableCell>
-                                        {actions.map(action => (
-                                            <TableCell key={action} align="center">
-                                                <Checkbox
-                                                    size="small"
-                                                    checked={modulePerm?.actions.includes(action) || false}
-                                                    onChange={() => handleTogglePermission(module, action)}
-                                                // System roles should ideally not have their core permissions removed, 
-                                                // but for Phase 1 we allow it if the user wants to customize.
-                                                />
-                                            </TableCell>
-                                        ))}
-                                    </TableRow>
-                                );
-                            })}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-            </DialogContent>
-            <DialogActions sx={{ p: 3 }}>
-                <Button onClick={onClose}>Cancel</Button>
-                <Button
-                    variant="contained"
-                    onClick={handleSave}
-                    disabled={loading || !name || !slug}
-                >
-                    {loading ? <CircularProgress size={24} /> : 'Save Changes'}
-                </Button>
-            </DialogActions>
-        </Dialog>
+    const moduleData = modules.map(m => ({ key: m, module: m }));
+
+    return (
+        <Modal
+            title={<Text strong style={{ fontSize: 18 }}>{initialData ? 'Edit Role' : 'Add New Role'}</Text>}
+            open={open}
+            onCancel={onClose}
+            onOk={handleSave}
+            confirmLoading={loading}
+            width={800}
+            okText="Save Changes"
+        >
+            <Form
+                form={form}
+                layout="vertical"
+                style={{ marginTop: 24 }}
+            >
+                <Row gutter={16}>
+                    <Col span={12}>
+                        <Form.Item 
+                            name="name" 
+                            label="Role Name" 
+                            rules={[{ required: true, message: 'Role name is required' }]}
+                        >
+                            <Input placeholder="e.g. Account Manager" disabled={initialData?.isSystem} />
+                        </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                        <Form.Item 
+                            name="slug" 
+                            label="Slug" 
+                            rules={[{ required: true, message: 'Slug is required' }]}
+                        >
+                            <Input placeholder="e.g. account-manager" disabled={!!initialData} />
+                        </Form.Item>
+                    </Col>
+                </Row>
+
+                <div style={{ marginBottom: 12 }}>
+                    <Text strong style={{ fontSize: 13, color: '#6C63FF' }}>PERMISSIONS MATRIX</Text>
+                </div>
+
+                <Table 
+                    columns={columns} 
+                    dataSource={moduleData} 
+                    pagination={false} 
+                    scroll={{ y: 400 }}
+                    size="small"
+                    bordered
+                    style={{ borderRadius: 8, overflow: 'hidden' }}
+                />
+            </Form>
+        </Modal>
     );
 }

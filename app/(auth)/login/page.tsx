@@ -1,20 +1,21 @@
-import { Box, Container } from '@mui/material';
+'use client';
+
+import { Flex } from 'antd';
 import LoginForm from '@/components/auth/LoginForm';
 
 export default function LoginPage() {
     return (
-        <Box
-            sx={{
-                backgroundColor: 'background.default',
+        <Flex
+            align="center"
+            justify="center"
+            style={{
+                backgroundColor: '#f5f5f5',
                 minHeight: '100vh',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
             }}
         >
-            <Container maxWidth="sm">
+            <div style={{ width: '100%', maxWidth: 450, padding: 24 }}>
                 <LoginForm />
-            </Container>
-        </Box>
+            </div>
+        </Flex>
     );
 }

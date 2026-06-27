@@ -1,38 +1,44 @@
 'use client';
 
-import { Grid, Paper, Typography, Box, Card, CardContent, List } from '@mui/material';
+import { Row, Col, Card, Typography, Flex, Space } from 'antd';
 import PageHeader from '@/components/shared/PageHeader';
 import {
-    PeopleAlt as PeopleIcon,
-    Work as ProjectIcon,
-    Assignment as TaskIcon,
-    Payments as RevenueIcon
-} from '@mui/icons-material';
+    UserOutlined,
+    ProjectOutlined,
+    CheckSquareOutlined,
+    DollarCircleOutlined,
+    RightOutlined
+} from '@ant-design/icons';
 import { useEffect, useState } from 'react';
 import apiClient from '@/lib/apiClient';
 
+const { Title, Text, Link } = Typography;
+
 const StatCard = ({ title, value, icon, color }: any) => (
-    <Card sx={{ height: '100%' }}>
-        <CardContent sx={{ display: 'flex', alignItems: 'center', p: 3 }}>
-            <Box sx={{
+    <Card 
+        styles={{ body: { padding: '24px' } }} 
+        style={{ borderRadius: 12, height: '100%', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}
+    >
+        <Flex align="center" gap={16}>
+            <div style={{
                 backgroundColor: `${color}15`,
                 color: color,
-                p: 1.5,
-                borderRadius: 3,
+                padding: '12px',
+                borderRadius: '12px',
                 display: 'flex',
-                mr: 2
+                fontSize: '24px'
             }}>
                 {icon}
-            </Box>
-            <Box>
-                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+            </div>
+            <div>
+                <Text type="secondary" style={{ fontWeight: 500, fontSize: 13, display: 'block' }}>
                     {title}
-                </Typography>
-                <Typography variant="h5" sx={{ fontWeight: 800 }}>
+                </Text>
+                <Title level={3} style={{ margin: 0, fontWeight: 800 }}>
                     {value}
-                </Typography>
-            </Box>
-        </CardContent>
+                </Title>
+            </div>
+        </Flex>
     </Card>
 );
 
@@ -54,55 +60,75 @@ export default function DashboardPage() {
     }, []);
 
     return (
-        <>
+        <div>
             <PageHeader
                 title="Dashboard Overview"
                 subtitle="Welcome back to AgencyOS. Here is what's happening today."
             />
 
-            <Grid container spacing={3} sx={{ mb: 4 }}>
-                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                    <StatCard title="Total Users" value={stats.totalUsers} icon={<PeopleIcon />} color="#6C63FF" />
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                    <StatCard title="Active Projects" value={stats.activeProjects} icon={<ProjectIcon />} color="#4CAF50" />
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                    <StatCard title="Pending Tasks" value={stats.pendingTasks} icon={<TaskIcon />} color="#FF9800" />
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                    <StatCard title="Monthly Revenue" value={stats.monthlyRevenue} icon={<RevenueIcon />} color="#FF6584" />
-                </Grid>
-            </Grid>
+            <Row gutter={[24, 24]} style={{ marginBottom: 32 }}>
+                <Col xs={24} sm={12} md={6}>
+                    <StatCard title="Total Users" value={stats.totalUsers} icon={<UserOutlined />} color="#6C63FF" />
+                </Col>
+                <Col xs={24} sm={12} md={6}>
+                    <StatCard title="Active Projects" value={stats.activeProjects} icon={<ProjectOutlined />} color="#52c41a" />
+                </Col>
+                <Col xs={24} sm={12} md={6}>
+                    <StatCard title="Pending Tasks" value={stats.pendingTasks} icon={<CheckSquareOutlined />} color="#faad14" />
+                </Col>
+                <Col xs={24} sm={12} md={6}>
+                    <StatCard title="Monthly Revenue" value={stats.monthlyRevenue} icon={<DollarCircleOutlined />} color="#eb2f96" />
+                </Col>
+            </Row>
 
-            <Grid container spacing={3}>
-                <Grid size={{ xs: 12, md: 8 }}>
-                    <Paper sx={{ p: 4, height: 400, display: 'flex', flexDirection: 'column' }}>
-                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>
-                            Recent Activity
-                        </Typography>
-                        <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f9f9f9', borderRadius: 2 }}>
-                            <Typography color="text.secondary">No recent activity found.</Typography>
-                        </Box>
-                    </Paper>
-                </Grid>
-                <Grid size={{ xs: 12, md: 4 }}>
-                    <Paper sx={{ p: 4, height: 400, display: 'flex', flexDirection: 'column' }}>
-                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>
-                            Quick Links
-                        </Typography>
-                        <List>
-                            {/* Simplified list for now */}
-                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                <Typography variant="body2" sx={{ cursor: 'pointer', color: 'primary.main', fontWeight: 600 }}>Manage Users</Typography>
-                                <Typography variant="body2" sx={{ cursor: 'pointer', color: 'primary.main', fontWeight: 600 }}>Configure Roles</Typography>
-                                <Typography variant="body2" sx={{ color: 'text.disabled' }}>Add Lead (Coming Soon)</Typography>
-                                <Typography variant="body2" sx={{ color: 'text.disabled' }}>Create Project (Coming Soon)</Typography>
-                            </Box>
-                        </List>
-                    </Paper>
-                </Grid>
-            </Grid>
-        </>
+            <Row gutter={[24, 24]}>
+                <Col xs={24} md={16}>
+                    <Card 
+                        title={<Text strong style={{ fontSize: 16 }}>Recent Activity</Text>} 
+                        style={{ borderRadius: 12, height: 400, boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}
+                    >
+                        <Flex vertical align="center" justify="center" style={{ height: '280px', backgroundColor: '#fafafa', borderRadius: 12 }}>
+                            <Text type="secondary">No recent activity found.</Text>
+                        </Flex>
+                    </Card>
+                </Col>
+                <Col xs={24} md={8}>
+                    <Card 
+                        title={<Text strong style={{ fontSize: 16 }}>Quick Links</Text>} 
+                        style={{ borderRadius: 12, height: 400, boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}
+                    >
+                        <Flex vertical>
+                            {[
+                                { title: 'Manage Users', link: '/users', status: 'active' },
+                                { title: 'Configure Roles', link: '/roles', status: 'active' },
+                                { title: 'Add Lead', link: '#', status: 'soon' },
+                                { title: 'Create Project', link: '#', status: 'soon' }
+                            ].map((item, index) => (
+                                <div key={index} style={{ padding: '12px 0' }}>
+                                    <Flex justify="space-between" align="center" style={{ width: '100%' }}>
+                                        <Space>
+                                            <RightOutlined style={{ fontSize: 12, color: item.status === 'active' ? '#6C63FF' : '#bfbfbf' }} />
+                                            <Link 
+                                                href={item.link}
+                                                style={{ color: item.status === 'active' ? '#6C63FF' : 'inherit' }}
+                                            >
+                                                <Text 
+                                                    strong={item.status === 'active'} 
+                                                    type={item.status === 'active' ? undefined : 'secondary'}
+                                                    style={{ color: item.status === 'active' ? '#6C63FF' : undefined, cursor: item.status === 'active' ? 'pointer' : 'default' }}
+                                                >
+                                                    {item.title}
+                                                </Text>
+                                            </Link>
+                                        </Space>
+                                        {item.status === 'soon' && <Text type="secondary" style={{ fontSize: 11 }}>Soon</Text>}
+                                    </Flex>
+                                </div>
+                            ))}
+                        </Flex>
+                    </Card>
+                </Col>
+            </Row>
+        </div>
     );
 }

@@ -6,18 +6,18 @@ export const authConfig = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.organizationId = (user as any).organizationId;
-        token.role = (user as any).role;
-        token.permissions = (user as any).permissions;
+        token.organizationId = user.organizationId;
+        token.role = user.role;
+        token.permissions = user.permissions;
       }
       return token;
     },
     async session({ session, token }) {
       if (token && session.user) {
-        (session.user as any).id = token.id as string;
-        (session.user as any).organizationId = token.organizationId;
-        (session.user as any).role = token.role;
-        (session.user as any).permissions = token.permissions;
+        session.user.id = token.id;
+        session.user.organizationId = token.organizationId;
+        session.user.role = token.role;
+        session.user.permissions = token.permissions;
       }
       return session;
     },

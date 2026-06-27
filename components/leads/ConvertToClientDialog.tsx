@@ -1,190 +1,126 @@
 'use client';
 
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import {
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    Button,
-    Grid,
-    TextField,
-    Typography,
-    Box,
-    MenuItem,
-    FormControl,
-    InputLabel,
-    Select,
-    CircularProgress,
-} from '@mui/material';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { 
+    Modal, 
+    Form, 
+    Input, 
+    InputNumber, 
+    Select, 
+    DatePicker, 
+    Typography, 
+    Divider, 
+    Row, 
+    Col 
+} from 'antd';
 import dayjs from 'dayjs';
 import UserSelect from '@/components/shared/UserSelect';
 
-const convertSchema = z.object({
-    contractStartDate: z.any().optional(),
-    contractEndDate: z.any().optional(),
-    monthlyRetainerValue: z.number().min(0).default(0),
-    tier: z.enum(['standard', 'premium', 'enterprise']).default('standard'),
-    assignedManager: z.string().min(1, 'Please assign a manager'),
-    assignedTeam: z.array(z.string()).default([]),
-});
-
-type ConvertFormValues = z.infer<typeof convertSchema>;
+const { Text, Title } = Typography;
+const { Option } = Select;
 
 interface ConvertToClientDialogProps {
     open: boolean;
     onClose: () => void;
-    onConvert: (data: ConvertFormValues) => void;
+    onConvert: (values: any) => void;
     lead: any;
     loading: boolean;
 }
 
 export default function ConvertToClientDialog({ open, onClose, onConvert, lead, loading }: ConvertToClientDialogProps) {
-    const {
-        register,
-        handleSubmit,
-        control,
-        formState: { errors },
-    } = useForm<ConvertFormValues>({
-        resolver: zodResolver(convertSchema),
-        defaultValues: {
-            monthlyRetainerValue: lead?.budget || 0,
-            tier: 'standard',
-            assignedManager: lead?.assignedTo?._id || lead?.assignedTo || '',
-            assignedTeam: [],
-        },
-    });
+    const [form] = Form.useForm();
 
-    const handleFormSubmit = (data: ConvertFormValues) => {
+    const handleOk = () => {
+        form.submit();
+    };
+
+    const onFinish = (values: any) => {
         onConvert({
-            ...data,
-            contractStartDate: data.contractStartDate ? data.contractStartDate.toDate() : null,
-            contractEndDate: data.contractEndDate ? data.contractEndDate.toDate() : null,
+            ...values,
+            contractStartDate: values.contractStartDate ? values.contractStartDate.toDate() : null,
+            contractEndDate: values.contractEndDate ? values.contractEndDate.toDate() : null,
         });
     };
 
     if (!lead) return null;
 
     return (
-        <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-            <DialogTitle sx={{ fontWeight: 800, textAlign: 'center', pt: 4 }}>
-                Convert Lead to Client 🎉
-            </DialogTitle>
-            <DialogContent>
-                <Box sx={{ mb: 4, p: 2, bgcolor: 'grey.50', borderRadius: 2 }}>
-                    <Typography variant="body2" color="text.secondary">Business Name</Typography>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1 }}>{lead.businessName}</Typography>
-                    <Typography variant="body2" color="text.secondary">Contact Person</Typography>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{lead.name}</Typography>
-                </Box>
+        <Modal
+            title={<Title level={4} style={{ margin: 0, textAlign: 'center' }}>Convert Lead to Client 🎉</Title>}
+            open={open}
+            onCancel={onClose}
+            onOk={handleOk}
+            confirmLoading={loading}
+            okText="Convert & Create Client"
+            width={600}
+        >
+            <div style={{ backgroundColor: '#f5f5f5', padding: '16px 24px', borderRadius: 12, marginBottom: 24, marginTop: 16 }}>
+                <Row gutter={16}>
+                    <Col span={12}>
+                        <Text type="secondary" style={{ fontSize: 11, display: 'block' }}>Business Name</Text>
+                        <Text strong style={{ fontSize: 15 }}>{lead.businessName}</Text>
+                    </Col>
+                    <Col span={12}>
+                        <Text type="secondary" style={{ fontSize: 11, display: 'block' }}>Contact Person</Text>
+                        <Text strong style={{ fontSize: 15 }}>{lead.name}</Text>
+                    </Col>
+                </Row>
+            </div>
 
-                <Box component="form" sx={{ mt: 2 }}>
-                    <Grid container spacing={3}>
-                        <Grid item xs={12}>
-                            <TextField
-                                label="Monthly Retainer Value (₹)"
-                                type="number"
-                                fullWidth
-                                {...register('monthlyRetainerValue', { valueAsNumber: true })}
-                                error={!!errors.monthlyRetainerValue}
+            <Form
+                form={form}
+                layout="vertical"
+                onFinish={onFinish}
+                initialValues={{
+                    monthlyRetainerValue: lead?.budget || 0,
+                    tier: 'standard',
+                    assignedManager: lead?.assignedTo?._id || lead?.assignedTo || '',
+                    assignedTeam: [],
+                }}
+            >
+                <Row gutter={16}>
+                    <Col span={24}>
+                        <Form.Item 
+                            name="monthlyRetainerValue" 
+                            label="Monthly Retainer Value (₹)"
+                            rules={[{ required: true }]}
+                        >
+                            <InputNumber 
+                                style={{ width: '100%' }} 
+                                formatter={value => `₹ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                             />
-                        </Grid>
-                        <Grid item xs={12}>
-                            <FormControl fullWidth>
-                                <InputLabel>Client Tier</InputLabel>
-                                <Controller
-                                    name="tier"
-                                    control={control}
-                                    render={({ field }) => (
-                                        <Select {...field} label="Client Tier">
-                                            <MenuItem value="standard">Standard</MenuItem>
-                                            <MenuItem value="premium">Premium</MenuItem>
-                                            <MenuItem value="enterprise">Enterprise</MenuItem>
-                                        </Select>
-                                    )}
-                                />
-                            </FormControl>
-                        </Grid>
-                        <Grid item xs={6}>
-                            <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                <Controller
-                                    name="contractStartDate"
-                                    control={control}
-                                    render={({ field }) => (
-                                        <DatePicker
-                                            label="Contract Start"
-                                            sx={{ width: '100%' }}
-                                            value={field.value}
-                                            onChange={field.onChange}
-                                        />
-                                    )}
-                                />
-                            </LocalizationProvider>
-                        </Grid>
-                        <Grid item xs={6}>
-                            <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                <Controller
-                                    name="contractEndDate"
-                                    control={control}
-                                    render={({ field }) => (
-                                        <DatePicker
-                                            label="Contract End"
-                                            sx={{ width: '100%' }}
-                                            value={field.value}
-                                            onChange={field.onChange}
-                                        />
-                                    )}
-                                />
-                            </LocalizationProvider>
-                        </Grid>
-                        <Grid item xs={12}>
-                            <Controller
-                                name="assignedManager"
-                                control={control}
-                                render={({ field }) => (
-                                    <UserSelect
-                                        label="Assigned Manager"
-                                        value={field.value}
-                                        onChange={field.onChange}
-                                        error={!!errors.assignedManager}
-                                        helperText={errors.assignedManager?.message}
-                                    />
-                                )}
-                            />
-                        </Grid>
-                        <Grid item xs={12}>
-                            <Controller
-                                name="assignedTeam"
-                                control={control}
-                                render={({ field }) => (
-                                    <UserSelect
-                                        label="Project Team Members"
-                                        value={field.value}
-                                        onChange={field.onChange}
-                                        multiple
-                                    />
-                                )}
-                            />
-                        </Grid>
-                    </Grid>
-                </Box>
-            </DialogContent>
-            <DialogActions sx={{ p: 4, pt: 0 }}>
-                <Button onClick={onClose} disabled={loading}>Cancel</Button>
-                <Button
-                    variant="contained"
-                    onClick={handleSubmit(handleFormSubmit)}
-                    disabled={loading}
-                    sx={{ px: 4 }}
-                >
-                    {loading ? <CircularProgress size={24} color="inherit" /> : 'Convert & Create Client →'}
-                </Button>
-            </DialogActions>
-        </Dialog>
+                        </Form.Item>
+                    </Col>
+                    <Col span={24}>
+                        <Form.Item name="tier" label="Client Tier" rules={[{ required: true }]}>
+                            <Select>
+                                <Option value="standard">Standard</Option>
+                                <Option value="premium">Premium</Option>
+                                <Option value="enterprise">Enterprise</Option>
+                            </Select>
+                        </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                        <Form.Item name="contractStartDate" label="Contract Start">
+                            <DatePicker style={{ width: '100%' }} format="DD MMM YYYY" />
+                        </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                        <Form.Item name="contractEndDate" label="Contract End">
+                            <DatePicker style={{ width: '100%' }} format="DD MMM YYYY" />
+                        </Form.Item>
+                    </Col>
+                    <Col span={24} style={{ marginBottom: 24 }}>
+                        <Form.Item name="assignedManager" rules={[{ required: true, message: 'Manager is required' }]}>
+                                <UserSelect label="Assigned Manager" />
+                        </Form.Item>
+                    </Col>
+                    <Col span={24}>
+                        <Form.Item name="assignedTeam">
+                                <UserSelect multiple label="Project Team Members" />
+                        </Form.Item>
+                    </Col>
+                </Row>
+            </Form>
+        </Modal>
     );
 }
