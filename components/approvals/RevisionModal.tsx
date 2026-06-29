@@ -37,7 +37,7 @@ export default function RevisionModal({ open, onClose, onConfirm, item, loading 
             width={480}
         >
             <Alert
-                message="This will send the content back to the Editing stage."
+                title="This will send the content back to the Editing stage."
                 type="warning"
                 showIcon
                 style={{ marginBottom: 20 }}

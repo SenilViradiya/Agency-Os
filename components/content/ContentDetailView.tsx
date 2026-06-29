@@ -221,7 +221,7 @@ export default function ContentDetailView({ id }: ContentDetailViewProps) {
             return (
                 <div style={{ padding: '24px', backgroundColor: '#f0f7ff', borderRadius: 12 }}>
                     <Alert 
-                        message="Ready for Review?" 
+                        title="Ready for Review?" 
                         description="Once you have the final file ready on Google Drive, submit it here for manager approval."
                         type="info" 
                         showIcon 
@@ -237,7 +237,7 @@ export default function ContentDetailView({ id }: ContentDetailViewProps) {
                 <Card style={{ borderRadius: 12, border: '1px solid #faad14', backgroundColor: '#fffbe6' }}>
                     <Flex vertical gap={16}>
                         <Alert 
-                            message="Awaiting Manager Review" 
+                            title="Awaiting Manager Review" 
                             type="warning" 
                             showIcon 
                         />
@@ -264,7 +264,7 @@ export default function ContentDetailView({ id }: ContentDetailViewProps) {
                 <Card style={{ borderRadius: 12, border: '1px solid #ff4d4f', backgroundColor: '#fff2f0' }}>
                     <Flex vertical gap={16}>
                         <Alert 
-                            message="Revision Requested" 
+                            title="Revision Requested" 
                             description={lastRev?.revisionNotes}
                             type="error" 
                             showIcon 
@@ -279,7 +279,7 @@ export default function ContentDetailView({ id }: ContentDetailViewProps) {
             return (
                 <Card style={{ borderRadius: 12, border: '1px solid #52c41a', backgroundColor: '#f6ffed' }}>
                     <Flex vertical gap={8}>
-                        <Alert message="Approved! ✓" type="success" showIcon />
+                        <Alert title="Approved! ✓" type="success" showIcon />
                         <Text strong>Approved by {item.approvalData.reviewedBy?.name} on {dayjs(item.approvalData.approvedAt).format('DD MMM, HH:mm')}</Text>
                         {item.approvalData.approvalNotes && <Text italic>"{item.approvalData.approvalNotes}"</Text>}
                     </Flex>
@@ -297,7 +297,7 @@ export default function ContentDetailView({ id }: ContentDetailViewProps) {
             return (
                 <div style={{ padding: '24px', backgroundColor: '#f6ffed', borderRadius: 12 }}>
                     <Alert 
-                        message="Ready to Publish!" 
+                        title="Ready to Publish!" 
                         description="The content has been approved. Once it's live on the platform, log the details here."
                         type="success" 
                         showIcon 
@@ -441,7 +441,7 @@ export default function ContentDetailView({ id }: ContentDetailViewProps) {
             >
                 {item.approvalData.status === 'revision_requested' && (
                     <Alert
-                        message="Revision Feedback"
+                        title="Revision Feedback"
                         description={item.approvalData.revisionHistory[item.approvalData.revisionHistory.length - 1]?.revisionNotes}
                         type="error"
                         showIcon

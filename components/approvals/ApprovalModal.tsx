@@ -61,7 +61,7 @@ export default function ApprovalModal({ open, onClose, onConfirm, item, loading 
             </Form>
 
             <Alert
-                message="This will move the content to the Publishing Queue and notify the editor."
+                title="This will move the content to the Publishing Queue and notify the editor."
                 type="info"
                 showIcon
                 style={{ marginTop: 16 }}
