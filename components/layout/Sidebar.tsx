@@ -14,6 +14,7 @@ import {
     VideoCameraOutlined as MeetingsIcon,
     FileSearchOutlined as ApprovalsIcon,
     UnorderedListOutlined as TasksIcon,
+    BarChartOutlined as AnalyticsIcon,
 } from '@ant-design/icons';
 import { usePathname, useRouter } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
@@ -106,6 +107,9 @@ export default function Sidebar({ collapsed, onCollapse, isMobile }: SidebarProp
                 ), 
                 icon: <PublishingIcon /> 
             },
+        ]},
+        { key: 'insights', type: 'group', label: 'Insights', children: [
+            { key: '/analytics', label: 'Analytics', icon: <AnalyticsIcon /> },
         ]},
         { key: 'admin', type: 'group', label: 'System', children: [
             { key: '/users', label: 'Users', icon: <PeopleIcon /> },

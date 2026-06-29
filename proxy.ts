@@ -10,7 +10,7 @@ export default auth((req) => {
   const isApiRoute = nextUrl.pathname.startsWith("/api");
   const isAuthApiRoute = nextUrl.pathname.startsWith("/api/auth");
   const isAuthPage = nextUrl.pathname.startsWith("/login");
-  const isPublicRoute = isAuthPage || isAuthApiRoute || nextUrl.pathname.startsWith("/_next") || nextUrl.pathname === "/favicon.ico";
+  const isPublicRoute = isAuthPage || isAuthApiRoute || nextUrl.pathname.startsWith("/_next") || nextUrl.pathname === "/favicon.ico" || nextUrl.pathname === "/notification.mp3";
 
   if (isAuthPage && isLoggedIn) {
     return NextResponse.redirect(new URL("/dashboard", nextUrl));

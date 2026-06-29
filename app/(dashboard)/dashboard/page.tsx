@@ -11,7 +11,10 @@ import {
     RocketOutlined,
     FileSyncOutlined,
     CheckCircleOutlined,
-    ExclamationCircleOutlined
+    ExclamationCircleOutlined,
+    BarChartOutlined,
+    TrophyOutlined,
+    CrownOutlined,
 } from '@ant-design/icons';
 import { useEffect, useState } from 'react';
 import apiClient from '@/lib/apiClient';
@@ -62,6 +65,7 @@ export default function DashboardPage() {
     const [myTasks, setMyTasks] = useState<any[]>([]);
     const [pipelineStats, setPipelineStats] = useState<any>({});
     const [recentApprovals, setRecentApprovals] = useState<any[]>([]);
+    const [topPerformers, setTopPerformers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -71,7 +75,8 @@ export default function DashboardPage() {
             apiClient.get('/tasks?status=todo,in_progress&limit=100'),
             apiClient.get('/content?limit=500'),
             apiClient.get('/approvals?limit=5'),
-        ]).then(([projects, tasks, content, approvals]) => {
+            apiClient.get('/analytics/team').catch(() => ({ data: { success: false } })),
+        ]).then(([projects, tasks, content, approvals, teamRes]) => {
             const allContent = content.data.data;
             
             setStats({
@@ -99,6 +104,14 @@ export default function DashboardPage() {
                 .sort((a: any, b: any) => dayjs(b.approvalData.reviewedAt || b.updatedAt).diff(dayjs(a.approvalData.reviewedAt || a.updatedAt)))
                 .slice(0, 5);
             setRecentApprovals(reviewed);
+
+            // Top 3 performers
+            if (teamRes.data?.success && teamRes.data.data?.members) {
+                const sorted = [...teamRes.data.data.members]
+                    .sort((a: any, b: any) => b.tasksCompleted - a.tasksCompleted)
+                    .slice(0, 3);
+                setTopPerformers(sorted);
+            }
 
         }).finally(() => setLoading(false));
     }, []);
@@ -246,6 +259,37 @@ export default function DashboardPage() {
                     </Card>
                 </Col>
             </Row>
+
+            {/* Team Performance Section */}
+            {topPerformers.length > 0 && (
+                <Card
+                    title={<Flex align="center" gap={8}><TrophyOutlined style={{ color: '#faad14' }} /> <Text strong style={{ fontSize: 16 }}>Top Performers This Month</Text></Flex>}
+                    style={{ borderRadius: 12, marginTop: 24, boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}
+                    extra={<Link href="/analytics">View Full Analytics →</Link>}
+                >
+                    <Flex vertical gap={12}>
+                        {topPerformers.map((p: any, idx: number) => (
+                            <Flex key={p.userId} align="center" gap={16} style={{ padding: '12px 16px', backgroundColor: idx === 0 ? '#fffbe6' : '#fafafa', borderRadius: 10 }}>
+                                <div style={{ position: 'relative' }}>
+                                    <Avatar size={44} src={p.avatar || undefined}>{p.name?.charAt(0)}</Avatar>
+                                    {idx === 0 && <CrownOutlined style={{ position: 'absolute', top: -8, right: -4, color: '#faad14', fontSize: 16 }} />}
+                                </div>
+                                <div style={{ flex: 1 }}>
+                                    <Text strong>{p.name}</Text>
+                                    <Text type="secondary" style={{ fontSize: 12, display: 'block' }}>{p.role}</Text>
+                                </div>
+                                <div style={{ textAlign: 'right' }}>
+                                    <Text strong style={{ fontSize: 18, color: '#6C63FF' }}>{p.tasksCompleted}</Text>
+                                    <Text type="secondary" style={{ fontSize: 11, display: 'block' }}>tasks completed</Text>
+                                </div>
+                                <Tag color={p.onTimeDeliveryRate >= 80 ? 'success' : p.onTimeDeliveryRate >= 60 ? 'warning' : 'error'} style={{ margin: 0 }}>
+                                    {p.onTimeDeliveryRate}% on-time
+                                </Tag>
+                            </Flex>
+                        ))}
+                    </Flex>
+                </Card>
+            )}
         </div>
     );
 }
