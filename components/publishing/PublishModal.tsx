@@ -76,7 +76,7 @@ export default function PublishModal({ open, onClose, onConfirm, item, loading }
             confirmLoading={loading}
             okText="Confirm Published ✓"
             okButtonProps={{ style: { backgroundColor: '#52c41a', borderColor: '#52c41a' } }}
-            destroyOnClose
+            destroyOnHidden
             width={580}
         >
             <div style={{ marginBottom: 24, padding: 16, backgroundColor: '#f9f9f9', borderRadius: 8 }}>

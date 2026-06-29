@@ -147,10 +147,10 @@ export default function ApprovalDetailDrawer({ open, onClose, item }: ApprovalDe
                     </Space>
                 </Flex>
             }
-            width={600}
+            size={600}
             onClose={onClose}
             open={open}
-            destroyOnClose
+            destroyOnHidden
         >
             <Tabs defaultActiveKey="info" items={items} />
         </Drawer>

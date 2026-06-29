@@ -33,7 +33,7 @@ export default function RevisionModal({ open, onClose, onConfirm, item, loading 
             confirmLoading={loading}
             okText="Send Revision Request"
             okButtonProps={{ danger: true }}
-            destroyOnClose
+            destroyOnHidden
             width={480}
         >
             <Alert

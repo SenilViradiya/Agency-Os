@@ -427,7 +427,7 @@ export default function ContentDetailView({ id }: ContentDetailViewProps) {
             <Drawer
                 title={item.approvalData.status === 'revision_requested' ? 'Resubmit for Review' : 'Submit for Review'}
                 placement="right"
-                width={480}
+                size={480}
                 onClose={() => setSubmitDrawerOpen(false)}
                 open={submitDrawerOpen}
                 extra={

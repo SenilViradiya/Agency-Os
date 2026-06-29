@@ -33,7 +33,7 @@ export default function ApprovalModal({ open, onClose, onConfirm, item, loading 
             confirmLoading={loading}
             okText="Confirm Approval →"
             okButtonProps={{ style: { backgroundColor: '#52c41a', borderColor: '#52c41a' } }}
-            destroyOnClose
+            destroyOnHidden
             width={480}
         >
             <div style={{ marginBottom: 20 }}>
