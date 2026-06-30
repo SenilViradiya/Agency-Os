@@ -28,6 +28,7 @@ import Payment from './Payment';
 import Expense from './Expense';
 import Vendor from './Vendor';
 import VendorBill from './VendorBill';
+import ClientPortalUser from './ClientPortalUser';
 
 // Force side-effects: Mongoose registers models on import.
 // Re-exporting keeps Turbopack from eliminating them.
@@ -47,6 +48,7 @@ export {
   Expense,
   Vendor,
   VendorBill,
+  ClientPortalUser,
 };
 
 /**
@@ -72,6 +74,7 @@ export function registerModels() {
     Expense,
     Vendor,
     VendorBill,
+    ClientPortalUser,
   };
 }
 

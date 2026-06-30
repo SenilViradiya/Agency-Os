@@ -91,6 +91,7 @@ export default function Sidebar({ collapsed, onCollapse, isMobile }: SidebarProp
         { key: 'crm', type: 'group', label: 'CRM', children: [
             { key: '/leads', label: 'Leads', icon: <LeadsIcon /> },
             { key: '/clients', label: 'Clients', icon: <ClientsIcon /> },
+            { key: '/clients/portal-access', label: 'Portal Access', icon: <AdminIcon /> },
             { key: '/projects', label: 'Projects', icon: <ProjectsIcon /> },
         ]},
         { key: 'production', type: 'group', label: 'Production', children: [
