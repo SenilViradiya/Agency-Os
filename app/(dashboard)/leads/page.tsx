@@ -9,7 +9,8 @@ import {
     Space, 
     Typography, 
     Flex, 
-    Spin 
+    Spin,
+    App
 } from 'antd';
 import { 
     PlusOutlined, 
@@ -29,6 +30,7 @@ const { Text } = Typography;
 const { Option } = Select;
 
 export default function LeadsPage() {
+    const { modal } = App.useApp();
     const router = useRouter();
     const [view, setView] = useState<'kanban' | 'list'>('kanban');
     const [leads, setLeads] = useState<any[]>([]);
@@ -103,16 +105,23 @@ export default function LeadsPage() {
     };
 
     const handleDeleteLead = async (id: string) => {
-        // We'll use window.confirm for now, or AntD Modal.confirm
-        if (!window.confirm('Are you sure you want to delete this lead?')) return;
-        try {
-            const res = await apiClient.delete(`/leads/${id}`);
-            if (res.data.success) {
-                fetchLeads();
+        modal.confirm({
+            title: 'Delete Lead',
+            content: 'Are you sure you want to delete this lead?',
+            okText: 'Yes, Delete',
+            okType: 'danger',
+            cancelText: 'No',
+            onOk: async () => {
+                try {
+                    const res = await apiClient.delete(`/leads/${id}`);
+                    if (res.data.success) {
+                        fetchLeads();
+                    }
+                } catch (error) {
+                    console.error('Failed to delete lead:', error);
+                }
             }
-        } catch (error) {
-            console.error('Failed to delete lead:', error);
-        }
+        });
     };
 
     const handleStatusChange = (leadId: string, newStatus: string) => {

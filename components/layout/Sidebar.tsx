@@ -1,7 +1,7 @@
 'use client';
 
-import React from 'react';
-import { Layout, Menu, Typography, Avatar, Divider, Button, Tooltip } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Layout, Menu, Typography, Avatar, Divider, Button, Tooltip, Badge } from 'antd';
 import {
     DashboardOutlined as DashboardIcon,
     TeamOutlined as PeopleIcon,
@@ -10,11 +10,22 @@ import {
     SolutionOutlined as LeadsIcon,
     ShopOutlined as ClientsIcon,
     ProjectOutlined as ProjectsIcon,
-    RocketOutlined as FinanceIcon,
+    RocketOutlined as PublishingIcon,
     VideoCameraOutlined as MeetingsIcon,
+    FileSearchOutlined as ApprovalsIcon,
+    UnorderedListOutlined as TasksIcon,
+    BarChartOutlined as AnalyticsIcon,
+    UserOutlined as EmployeesIcon,
+    CalendarOutlined as AttendanceIcon,
+    FileProtectOutlined as LeavesIcon,
+    DollarOutlined as PayrollIcon,
+    TrophyOutlined as PerformanceIcon,
+    NotificationOutlined as AnnouncementsIcon,
+    ApartmentOutlined as HRIcon,
 } from '@ant-design/icons';
 import { usePathname, useRouter } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
+import apiClient from '@/lib/apiClient';
 
 const { Sider } = Layout;
 const { Text, Title } = Typography;
@@ -29,29 +40,127 @@ export default function Sidebar({ collapsed, onCollapse, isMobile }: SidebarProp
     const pathname = usePathname();
     const router = useRouter();
     const { data: session } = useSession();
+    const [counts, setCounts] = useState({ pendingApprovals: 0, readyToPublish: 0, revisionsRequested: 0, pendingLeaves: 0 });
+
+    const fetchCounts = async () => {
+        try {
+            // Simplified fetch for sidebar badges
+            const appRes = await apiClient.get('/approvals?limit=1');
+            const pubRes = await apiClient.get('/publishing?status=ready_to_publish&limit=1');
+            
+            // For editors, we also want to see revision_requested count
+            const revRes = await apiClient.get('/approvals?status=revision_requested&limit=1');
+
+            // HR pending leaves count
+            let pendingLeaves = 0;
+            try {
+                const lvRes = await apiClient.get('/hr/leaves?status=pending&limit=1');
+                pendingLeaves = lvRes.data?.meta?.total || 0;
+            } catch { /* HR module may not be accessible */ }
+
+            setCounts({
+                pendingApprovals: appRes.data.pagination.total,
+                readyToPublish: pubRes.data.pagination.total,
+                revisionsRequested: revRes.data.pagination.total,
+                pendingLeaves,
+            });
+        } catch (error) {
+            console.error('Failed to fetch sidebar counts:', error);
+        }
+    };
+
+    useEffect(() => {
+        if (session) {
+            fetchCounts();
+            const interval = setInterval(fetchCounts, 60000); // Refresh every minute
+            return () => clearInterval(interval);
+        }
+    }, [session]);
 
     const handleLogout = async () => {
         await signOut({ callbackUrl: '/login' });
     };
 
     const currentRole = (session?.user as any)?.role;
+    const isManager = currentRole === 'Manager' || currentRole === 'Super Admin' || currentRole === 'Admin';
 
     const menuItems = [
-        { key: '/dashboard', label: 'Dashboard', icon: <DashboardIcon />, role: 'all' },
-        { key: '/leads', label: 'Leads', icon: <LeadsIcon />, role: 'all' },
-        { key: '/clients', label: 'Clients', icon: <ClientsIcon />, role: 'all' },
-        { key: '/projects', label: 'Projects', icon: <ProjectsIcon />, role: 'all' },
-        { key: '/users', label: 'Users', icon: <PeopleIcon />, role: 'all' },
-        { key: '/roles', label: 'Roles', icon: <AdminIcon />, role: 'super-admin-only' },
+        { key: 'dashboard', type: 'group', label: 'Overview', children: [
+            { key: '/dashboard', label: 'Dashboard', icon: <DashboardIcon /> },
+        ]},
+        { key: 'crm', type: 'group', label: 'CRM', children: [
+            { key: '/leads', label: 'Leads', icon: <LeadsIcon /> },
+            { key: '/clients', label: 'Clients', icon: <ClientsIcon /> },
+            { key: '/clients/portal-access', label: 'Portal Access', icon: <AdminIcon /> },
+            { key: '/projects', label: 'Projects', icon: <ProjectsIcon /> },
+        ]},
+        { key: 'production', type: 'group', label: 'Production', children: [
+            { key: '/tasks', label: 'Tasks', icon: <TasksIcon /> },
+            { key: '/content', label: 'Content Planner', icon: <MeetingsIcon /> },
+            { 
+                key: '/approvals', 
+                label: (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                        <span>Approvals</span>
+                        {!collapsed && (
+                            <Badge 
+                                count={isManager ? counts.pendingApprovals : counts.revisionsRequested} 
+                                color={isManager ? '#ff4d4f' : '#faad14'} 
+                                size="small" 
+                            />
+                        )}
+                    </div>
+                ), 
+                icon: <ApprovalsIcon /> 
+            },
+            { 
+                key: '/publishing', 
+                label: (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                        <span>Publishing</span>
+                        {!collapsed && <Badge count={counts.readyToPublish} color="#1890ff" size="small" />}
+                    </div>
+                ), 
+                icon: <PublishingIcon /> 
+            },
+        ]},
+        { key: 'insights', type: 'group', label: 'Insights', children: [
+            { key: '/analytics', label: 'Analytics', icon: <AnalyticsIcon /> },
+        ]},
+        { key: 'hr', type: 'group', label: 'HR', children: [
+            { key: '/hr', label: 'HR Dashboard', icon: <HRIcon /> },
+            { key: '/hr/employees', label: 'Employees', icon: <EmployeesIcon /> },
+            { key: '/hr/attendance', label: 'Attendance', icon: <AttendanceIcon /> },
+            {
+                key: '/hr/leaves',
+                label: (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                        <span>Leaves</span>
+                        {!collapsed && isManager && (
+                            <Badge count={counts.pendingLeaves} color="#ff4d4f" size="small" />
+                        )}
+                    </div>
+                ),
+                icon: <LeavesIcon />,
+            },
+            ...(isManager ? [
+                { key: '/hr/payroll', label: 'Payroll', icon: <PayrollIcon /> },
+            ] : []),
+            { key: '/hr/performance', label: 'Performance', icon: <PerformanceIcon /> },
+            { key: '/hr/announcements', label: 'Announcements', icon: <AnnouncementsIcon /> },
+        ]},
+        { key: 'finance_group', type: 'group', label: 'Finance', children: [
+            { key: '/finance', label: 'Finance Portal', icon: <PayrollIcon /> },
+        ]},
+        { key: 'admin', type: 'group', label: 'System', children: [
+            { key: '/users', label: 'Users', icon: <PeopleIcon /> },
+            ...(currentRole === 'Super Admin' ? [{ key: '/roles', label: 'Roles', icon: <AdminIcon /> }] : []),
+        ]},
     ];
 
-    const filteredItems = menuItems.filter(item => {
-        if (item.role === 'super-admin-only' && currentRole !== 'Super Admin') return false;
-        return true;
-    });
+    const filteredItems = menuItems;
 
     const comingSoonItems = [
-        { key: 'finance', label: 'Finance', icon: <FinanceIcon />, disabled: true },
         { key: 'meetings', label: 'Meetings', icon: <MeetingsIcon />, disabled: true },
     ];
 
@@ -63,12 +172,15 @@ export default function Sidebar({ collapsed, onCollapse, isMobile }: SidebarProp
             breakpoint="lg"
             width={260}
             collapsedWidth={80}
+            className="sidebar-scroll"
             style={{
                 height: '100vh',
                 position: 'sticky',
                 top: 0,
                 left: 0,
                 backgroundColor: '#1A1A2E',
+                overflowY: 'auto',
+                overflowX: 'hidden',
             }}
         >
             <div style={{ height: 64, display: 'flex', alignItems: 'center', padding: '0 24px', overflow: 'hidden' }}>
@@ -82,11 +194,13 @@ export default function Sidebar({ collapsed, onCollapse, isMobile }: SidebarProp
                 theme="dark"
                 mode="inline"
                 selectedKeys={[pathname]}
-                items={filteredItems.map(item => ({
-                    key: item.key,
-                    icon: item.icon,
-                    label: item.label,
-                    onClick: () => router.push(item.key),
+                items={filteredItems.map(group => ({
+                    ...group,
+                    type: group.type as "group",
+                    children: group.children?.map(item => ({
+                        ...item,
+                        onClick: () => router.push(item.key as string),
+                    }))
                 }))}
                 style={{ backgroundColor: 'transparent', borderRight: 0 }}
             />

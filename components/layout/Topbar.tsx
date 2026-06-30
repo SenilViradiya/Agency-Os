@@ -1,11 +1,13 @@
 'use client';
 
-import React from 'react';
-import { Layout, Button, Typography, Space } from 'antd';
-import { MenuUnfoldOutlined, MenuFoldOutlined, BellOutlined } from '@ant-design/icons';
+import React, { useState } from 'react';
+import { Layout, Button, Typography, Space, Badge, Popover, Avatar } from 'antd';
+import { MenuUnfoldOutlined, MenuFoldOutlined, BellOutlined, UserOutlined } from '@ant-design/icons';
+import { useNotifications } from '@/hooks/useNotifications';
+import NotificationPopover from './NotificationPopover';
+import { useSession } from 'next-auth/react';
 
 const { Header } = Layout;
-const { Title } = Typography;
 
 interface TopbarProps {
     collapsed: boolean;
@@ -13,6 +15,10 @@ interface TopbarProps {
 }
 
 export default function Topbar({ collapsed, onToggle }: TopbarProps) {
+    const { unreadCount } = useNotifications();
+    const [popoverOpen, setPopoverOpen] = useState(false);
+    const { data: session } = useSession();
+
     return (
         <Header style={{ 
             padding: '0 24px', 
@@ -30,15 +36,32 @@ export default function Topbar({ collapsed, onToggle }: TopbarProps) {
                     type="text"
                     icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
                     onClick={onToggle}
-                    style={{ fontSize: '16px', width: 64, height: 64 }}
+                    style={{ fontSize: '16px', width: 40, height: 40 }}
                 />
             </Space>
 
-            <Space size="middle">
-                <Button type="text" icon={<BellOutlined />} style={{ fontSize: '18px' }} />
-                <div style={{ width: 32, height: 32, borderRadius: '50%', backgroundColor: '#f0f2f5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <BellOutlined style={{ color: '#8c8c8c' }} />
-                </div>
+            <Space size="large">
+                <Popover
+                    content={<NotificationPopover onClose={() => setPopoverOpen(false)} />}
+                    trigger="click"
+                    open={popoverOpen}
+                    onOpenChange={setPopoverOpen}
+                    placement="bottomRight"
+                    styles={{ content: { padding: 0 } }}
+                >
+                    <Badge count={unreadCount} overflowCount={99} size="small">
+                        <Button type="text" icon={<BellOutlined />} style={{ fontSize: '18px' }} />
+                    </Badge>
+                </Popover>
+                
+                <Space size={8} style={{ cursor: 'pointer' }}>
+                    <Avatar 
+                        src={session?.user?.image} 
+                        icon={!session?.user?.image && <UserOutlined />} 
+                        style={{ backgroundColor: '#6C63FF' }}
+                    />
+                    <Typography.Text strong>{session?.user?.name}</Typography.Text>
+                </Space>
             </Space>
         </Header>
     );

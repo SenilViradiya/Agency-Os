@@ -9,7 +9,7 @@ import {
     Space, 
     Typography, 
     Flex, 
-    Modal 
+    App 
 } from 'antd';
 import { 
     PlusOutlined, 
@@ -24,6 +24,7 @@ const { Text } = Typography;
 const { Option } = Select;
 
 export default function UsersPage() {
+    const { modal } = App.useApp();
     const router = useRouter();
     const [users, setUsers] = useState([]);
     const [roles, setRoles] = useState([]);
@@ -83,7 +84,7 @@ export default function UsersPage() {
     };
 
     const handleDeleteClick = (user: any) => {
-        Modal.confirm({
+        modal.confirm({
             title: 'Confirm Deactivation',
             content: `Are you sure you want to deactivate ${user.name}? They will no longer be able to log in.`,
             okText: 'Deactivate',

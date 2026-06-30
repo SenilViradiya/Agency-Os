@@ -14,10 +14,10 @@ export const authConfig = {
     },
     async session({ session, token }) {
       if (token && session.user) {
-        session.user.id = token.id;
-        session.user.organizationId = token.organizationId;
-        session.user.role = token.role;
-        session.user.permissions = token.permissions;
+        (session.user as any).id = token.id as string;
+        (session.user as any).organizationId = token.organizationId;
+        (session.user as any).role = token.role;
+        (session.user as any).permissions = token.permissions;
       }
       return session;
     },

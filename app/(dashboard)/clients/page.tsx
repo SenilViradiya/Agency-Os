@@ -24,11 +24,13 @@ import ClientCard from '@/components/clients/ClientCard';
 import ClientDrawer from '@/components/clients/ClientDrawer';
 import PageHeader from '@/components/shared/PageHeader';
 import apiClient from '@/lib/apiClient';
+import { useRouter } from 'next/navigation';
 
 const { Text } = Typography;
 const { Option } = Select;
 
 export default function ClientsPage() {
+    const router = useRouter();
     const [view, setView] = useState<'grid' | 'table'>('grid');
     const [clients, setClients] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -117,15 +119,24 @@ export default function ClientsPage() {
                     title="Clients"
                     subtitle={`Manage your active partnerships. Total ${stats.total} clients.`}
                 />
-                <Button
-                    type="primary"
-                    size="large"
-                    icon={<PlusOutlined />}
-                    onClick={() => { setSelectedClient(null); setDrawerOpen(true); }}
-                    style={{ height: 45, fontWeight: 600, borderRadius: 8 }}
-                >
-                    Add Client
-                </Button>
+                <Space>
+                    <Button
+                        size="large"
+                        onClick={() => router.push('/clients/portal-access')}
+                        style={{ height: 45, borderRadius: 8 }}
+                    >
+                        Portal Access Manager
+                    </Button>
+                    <Button
+                        type="primary"
+                        size="large"
+                        icon={<PlusOutlined />}
+                        onClick={() => { setSelectedClient(null); setDrawerOpen(true); }}
+                        style={{ height: 45, fontWeight: 600, borderRadius: 8 }}
+                    >
+                        Add Client
+                    </Button>
+                </Space>
             </Flex>
 
             <Flex justify="space-between" align="center" style={{ marginBottom: 24 }} wrap="wrap" gap={16}>

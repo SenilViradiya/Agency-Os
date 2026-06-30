@@ -8,6 +8,7 @@ import { authConfig } from './auth.config';
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
+  trustHost: true,
   providers: [
     CredentialsProvider({
       name: 'Credentials',
@@ -24,7 +25,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
           await dbConnect();
 
-          const email = credentials.email.toLowerCase().trim();
+          const creds = credentials as any;
+          const email = creds.email.toLowerCase().trim();
           const user = await User.findOne({ email }).select('+password').populate({
             path: 'role',
             model: Role
@@ -34,7 +36,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             return null;
           }
 
-          const isValid = await bcrypt.compare(credentials.password as string, user.password);
+          const isValid = await bcrypt.compare(creds.password as string, user.password);
           
           if (!isValid || user.status !== 'active') {
             return null;
