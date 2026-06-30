@@ -45,7 +45,7 @@ export default function ApprovalHistoryTimeline({ history }: { history: any[] })
 
                             {rev.resolvedAt ? (
                                 <div style={{ backgroundColor: '#f6ffed', padding: '12px', borderRadius: 8, borderLeft: '3px solid #52c41a' }}>
-                                    <Space direction="vertical" size={4} style={{ width: '100%' }}>
+                                    <Space orientation="vertical" size={4} style={{ width: '100%' }}>
                                         <Text strong style={{ display: 'block', fontSize: 13, color: '#52c41a' }}>
                                             <CheckCircleOutlined /> RESOLVED ON {dayjs(rev.resolvedAt).format('DD MMM, HH:mm')}
                                         </Text>

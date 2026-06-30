@@ -185,7 +185,7 @@ export default function PublishingPage() {
                     <Card style={{ borderRadius: 12, padding: '60px 0', textAlign: 'center' }}>
                         <Empty 
                             description={
-                                <Space direction="vertical" size={4}>
+                                <Space orientation="vertical" size={4}>
                                     <Text strong>Everything is published!</Text>
                                     <Text type="secondary">Waiting for new content to be approved.</Text>
                                 </Space>

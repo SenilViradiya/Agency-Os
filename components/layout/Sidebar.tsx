@@ -15,6 +15,13 @@ import {
     FileSearchOutlined as ApprovalsIcon,
     UnorderedListOutlined as TasksIcon,
     BarChartOutlined as AnalyticsIcon,
+    UserOutlined as EmployeesIcon,
+    CalendarOutlined as AttendanceIcon,
+    FileProtectOutlined as LeavesIcon,
+    DollarOutlined as PayrollIcon,
+    TrophyOutlined as PerformanceIcon,
+    NotificationOutlined as AnnouncementsIcon,
+    ApartmentOutlined as HRIcon,
 } from '@ant-design/icons';
 import { usePathname, useRouter } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
@@ -33,7 +40,7 @@ export default function Sidebar({ collapsed, onCollapse, isMobile }: SidebarProp
     const pathname = usePathname();
     const router = useRouter();
     const { data: session } = useSession();
-    const [counts, setCounts] = useState({ pendingApprovals: 0, readyToPublish: 0, revisionsRequested: 0 });
+    const [counts, setCounts] = useState({ pendingApprovals: 0, readyToPublish: 0, revisionsRequested: 0, pendingLeaves: 0 });
 
     const fetchCounts = async () => {
         try {
@@ -44,10 +51,18 @@ export default function Sidebar({ collapsed, onCollapse, isMobile }: SidebarProp
             // For editors, we also want to see revision_requested count
             const revRes = await apiClient.get('/approvals?status=revision_requested&limit=1');
 
+            // HR pending leaves count
+            let pendingLeaves = 0;
+            try {
+                const lvRes = await apiClient.get('/hr/leaves?status=pending&limit=1');
+                pendingLeaves = lvRes.data?.meta?.total || 0;
+            } catch { /* HR module may not be accessible */ }
+
             setCounts({
                 pendingApprovals: appRes.data.pagination.total,
                 readyToPublish: pubRes.data.pagination.total,
-                revisionsRequested: revRes.data.pagination.total
+                revisionsRequested: revRes.data.pagination.total,
+                pendingLeaves,
             });
         } catch (error) {
             console.error('Failed to fetch sidebar counts:', error);
@@ -110,6 +125,28 @@ export default function Sidebar({ collapsed, onCollapse, isMobile }: SidebarProp
         ]},
         { key: 'insights', type: 'group', label: 'Insights', children: [
             { key: '/analytics', label: 'Analytics', icon: <AnalyticsIcon /> },
+        ]},
+        { key: 'hr', type: 'group', label: 'HR', children: [
+            { key: '/hr', label: 'HR Dashboard', icon: <HRIcon /> },
+            { key: '/hr/employees', label: 'Employees', icon: <EmployeesIcon /> },
+            { key: '/hr/attendance', label: 'Attendance', icon: <AttendanceIcon /> },
+            {
+                key: '/hr/leaves',
+                label: (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                        <span>Leaves</span>
+                        {!collapsed && isManager && (
+                            <Badge count={counts.pendingLeaves} color="#ff4d4f" size="small" />
+                        )}
+                    </div>
+                ),
+                icon: <LeavesIcon />,
+            },
+            ...(isManager ? [
+                { key: '/hr/payroll', label: 'Payroll', icon: <PayrollIcon /> },
+            ] : []),
+            { key: '/hr/performance', label: 'Performance', icon: <PerformanceIcon /> },
+            { key: '/hr/announcements', label: 'Announcements', icon: <AnnouncementsIcon /> },
         ]},
         { key: 'admin', type: 'group', label: 'System', children: [
             { key: '/users', label: 'Users', icon: <PeopleIcon /> },

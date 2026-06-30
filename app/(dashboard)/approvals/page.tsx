@@ -238,7 +238,7 @@ export default function ApprovalsPage() {
                 <Card style={{ borderRadius: 12, padding: '60px 0', textAlign: 'center' }}>
                     <Empty 
                         description={
-                            <Space direction="vertical" size={4}>
+                            <Space orientation="vertical" size={4}>
                                 <Text strong>No content found in this queue</Text>
                                 <Text type="secondary">All clear! No pending items match your filters.</Text>
                             </Space>
