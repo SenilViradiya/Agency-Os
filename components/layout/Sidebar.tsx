@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Layout, Menu, Typography, Avatar, Divider, Button, Tooltip, Badge } from 'antd';
+import { Layout, Menu, Typography, Avatar, Divider, Button, Tooltip, Badge, Modal } from 'antd';
 import {
     DashboardOutlined as DashboardIcon,
     TeamOutlined as PeopleIcon,
@@ -22,6 +22,7 @@ import {
     TrophyOutlined as PerformanceIcon,
     NotificationOutlined as AnnouncementsIcon,
     ApartmentOutlined as HRIcon,
+    ExclamationCircleOutlined,
 } from '@ant-design/icons';
 import { usePathname, useRouter } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
@@ -78,7 +79,22 @@ export default function Sidebar({ collapsed, onCollapse, isMobile }: SidebarProp
     }, [session]);
 
     const handleLogout = async () => {
-        await signOut({ callbackUrl: '/login' });
+        await signOut({
+            callbackUrl: '/login',
+            redirect: true,
+        });
+    };
+
+    const handleLogoutClick = () => {
+        Modal.confirm({
+            title: 'Log out of AgencyOS?',
+            icon: <ExclamationCircleOutlined />,
+            content: "You'll need to sign in again to access your dashboard.",
+            okText: 'Log Out',
+            okType: 'danger',
+            cancelText: 'Cancel',
+            onOk: handleLogout,
+        });
     };
 
     const currentRole = (session?.user as any)?.role;
@@ -226,40 +242,54 @@ export default function Sidebar({ collapsed, onCollapse, isMobile }: SidebarProp
             />
 
             <div style={{ marginTop: 'auto', padding: '16px' }}>
-                <div style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: 12, 
-                    padding: '8px', 
-                    borderRadius: 8, 
-                    backgroundColor: 'rgba(255,255,255,0.05)',
-                    marginBottom: 12,
-                    justifyContent: collapsed ? 'center' : 'flex-start'
-                }}>
-                    <Avatar 
-                        src={session?.user?.image} 
-                        style={{ backgroundColor: '#6C63FF', minWidth: 32 }}
+                <Tooltip title="Log Out" placement="right" open={collapsed ? undefined : false}>
+                    <div 
+                        onClick={handleLogoutClick}
+                        style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: 12, 
+                            padding: '8px', 
+                            borderRadius: 8, 
+                            backgroundColor: 'rgba(255,255,255,0.05)',
+                            marginBottom: 12,
+                            justifyContent: collapsed ? 'center' : 'flex-start',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s',
+                        }}
+                        className="sidebar-profile-box"
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)';
+                        }}
                     >
-                        {session?.user?.name?.charAt(0)}
-                    </Avatar>
-                    {!collapsed && (
-                        <div style={{ overflow: 'hidden' }}>
-                            <Text strong style={{ color: 'white', display: 'block' }} ellipsis>
-                                {session?.user?.name}
-                            </Text>
-                            <Text type="secondary" style={{ fontSize: 11 }}>
-                                {currentRole}
-                            </Text>
-                        </div>
-                    )}
-                </div>
+                        <Avatar 
+                            src={session?.user?.image} 
+                            style={{ backgroundColor: '#6C63FF', minWidth: 32 }}
+                        >
+                            {session?.user?.name?.charAt(0)}
+                        </Avatar>
+                        {!collapsed && (
+                            <div style={{ overflow: 'hidden' }}>
+                                <Text strong style={{ color: 'white', display: 'block' }} ellipsis>
+                                    {session?.user?.name}
+                                </Text>
+                                <Text type="secondary" style={{ fontSize: 11 }}>
+                                    {currentRole}
+                                </Text>
+                            </div>
+                        )}
+                    </div>
+                </Tooltip>
                 
                 <Button 
                     type="text" 
                     icon={<LogoutIcon />} 
                     danger 
                     block 
-                    onClick={handleLogout}
+                    onClick={handleLogoutClick}
                     style={{ 
                         display: 'flex', 
                         alignItems: 'center', 

@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import { Layout, Button, Typography, Space, Avatar, Spin } from 'antd';
-import { MenuUnfoldOutlined, MenuFoldOutlined, LogoutOutlined } from '@ant-design/icons';
+import { Layout, Button, Typography, Space, Avatar, Spin, Modal } from 'antd';
+import { MenuUnfoldOutlined, MenuFoldOutlined, LogoutOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import { usePortal } from './PortalContext';
 import { signOut } from 'next-auth/react';
 
@@ -18,7 +18,22 @@ export default function PortalTopbar({ collapsed, onToggle }: PortalTopbarProps)
     const { client, user, loading } = usePortal();
 
     const handleLogout = async () => {
-        await signOut({ callbackUrl: '/portal-login' });
+        await signOut({
+            callbackUrl: '/portal-login',
+            redirect: true,
+        });
+    };
+
+    const handleLogoutClick = () => {
+        Modal.confirm({
+            title: 'Log out?',
+            icon: <ExclamationCircleOutlined />,
+            content: "You'll need to sign in again to view your projects and invoices.",
+            okText: 'Log Out',
+            okType: 'danger',
+            cancelText: 'Cancel',
+            onOk: handleLogout,
+        });
     };
 
     return (
@@ -78,7 +93,7 @@ export default function PortalTopbar({ collapsed, onToggle }: PortalTopbarProps)
                     type="text" 
                     icon={<LogoutOutlined />} 
                     danger
-                    onClick={handleLogout}
+                    onClick={handleLogoutClick}
                     style={{ display: 'flex', alignItems: 'center', gap: 4 }}
                 >
                     Logout
