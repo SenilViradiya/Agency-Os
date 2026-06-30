@@ -61,7 +61,7 @@ export default function MarkAttendanceModal({ open, onClose, employeeId, employe
             onCancel={onClose}
             onOk={() => form.submit()}
             confirmLoading={loading}
-            destroyOnClose
+            destroyOnHidden
             width={480}
         >
             <Form

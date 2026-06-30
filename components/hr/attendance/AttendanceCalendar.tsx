@@ -91,7 +91,7 @@ export default function AttendanceCalendar({ records, month }: AttendanceCalenda
                                     cursor: 'default',
                                     minHeight: 44,
                                     display: 'flex',
-                                    flexorientation: 'column',
+                                    flexDirection: 'column',
                                     alignItems: 'center',
                                     justifyContent: 'center',
                                 }}

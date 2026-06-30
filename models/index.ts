@@ -21,6 +21,13 @@ import Task from './Task';
 import ContentItem from './ContentItem';
 import Lead from './Lead';
 import Notification from './Notification';
+import FinanceSettings from './FinanceSettings';
+import Quotation from './Quotation';
+import Invoice from './Invoice';
+import Payment from './Payment';
+import Expense from './Expense';
+import Vendor from './Vendor';
+import VendorBill from './VendorBill';
 
 // Force side-effects: Mongoose registers models on import.
 // Re-exporting keeps Turbopack from eliminating them.
@@ -33,6 +40,13 @@ export {
   ContentItem,
   Lead,
   Notification,
+  FinanceSettings,
+  Quotation,
+  Invoice,
+  Payment,
+  Expense,
+  Vendor,
+  VendorBill,
 };
 
 /**
@@ -51,5 +65,13 @@ export function registerModels() {
     ContentItem,
     Lead,
     Notification,
+    FinanceSettings,
+    Quotation,
+    Invoice,
+    Payment,
+    Expense,
+    Vendor,
+    VendorBill,
   };
 }
+

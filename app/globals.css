@@ -26,20 +26,38 @@ a {
 }
 
 /* Custom Scrollbar */
-::-webkit_scrollbar {
+::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
-::-webkit_scrollbar-track {
+::-webkit-scrollbar-track {
   background: #f1f1f1;
 }
 
-::-webkit_scrollbar-thumb {
+::-webkit-scrollbar-thumb {
   background: #ccc;
   border-radius: 4px;
 }
 
-::-webkit_scrollbar-thumb:hover {
+::-webkit-scrollbar-thumb:hover {
   background: #aaa;
+}
+
+/* Custom Scrollbar for Sidebar */
+.sidebar-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.35);
 }

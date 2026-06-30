@@ -105,7 +105,7 @@ export default function EmployeeDrawer({ open, onClose, onSubmit, initialData }:
             open={open}
             onClose={onClose}
             width={640}
-            destroyOnClose
+            destroyOnHidden
             footer={
                 <Flex justify="end" gap={8}>
                     <Button onClick={onClose}>Cancel</Button>

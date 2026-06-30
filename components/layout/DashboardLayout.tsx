@@ -29,20 +29,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
     return (
         <App>
-            <Layout style={{ minHeight: '100vh' }}>
-            <Sidebar collapsed={collapsed} onCollapse={setCollapsed} isMobile={isMobile} />
-            <Layout>
-                <Topbar collapsed={collapsed} onToggle={toggleCollapsed} />
-                <Content style={{ 
-                    padding: isMobile ? '16px' : '24px 32px',
-                    margin: 0,
-                    minHeight: 280,
-                    transition: 'all 0.2s'
-                }}>
-                    {children}
-                </Content>
+            <Layout style={{ height: '100vh', overflow: 'hidden' }}>
+                <Sidebar collapsed={collapsed} onCollapse={setCollapsed} isMobile={isMobile} />
+                <Layout style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+                    <Topbar collapsed={collapsed} onToggle={toggleCollapsed} />
+                    <Content style={{ 
+                        padding: isMobile ? '16px' : '24px 32px',
+                        margin: 0,
+                        flex: 1,
+                        overflowY: 'auto',
+                        transition: 'all 0.2s',
+                        backgroundColor: '#F4F6F9'
+                    }}>
+                        {children}
+                    </Content>
+                </Layout>
             </Layout>
-        </Layout>
         </App>
     );
 }

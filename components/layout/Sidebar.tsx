@@ -148,6 +148,9 @@ export default function Sidebar({ collapsed, onCollapse, isMobile }: SidebarProp
             { key: '/hr/performance', label: 'Performance', icon: <PerformanceIcon /> },
             { key: '/hr/announcements', label: 'Announcements', icon: <AnnouncementsIcon /> },
         ]},
+        { key: 'finance_group', type: 'group', label: 'Finance', children: [
+            { key: '/finance', label: 'Finance Portal', icon: <PayrollIcon /> },
+        ]},
         { key: 'admin', type: 'group', label: 'System', children: [
             { key: '/users', label: 'Users', icon: <PeopleIcon /> },
             ...(currentRole === 'Super Admin' ? [{ key: '/roles', label: 'Roles', icon: <AdminIcon /> }] : []),
@@ -157,7 +160,6 @@ export default function Sidebar({ collapsed, onCollapse, isMobile }: SidebarProp
     const filteredItems = menuItems;
 
     const comingSoonItems = [
-        { key: 'finance', label: 'Finance', icon: <PublishingIcon />, disabled: true },
         { key: 'meetings', label: 'Meetings', icon: <MeetingsIcon />, disabled: true },
     ];
 
@@ -169,12 +171,15 @@ export default function Sidebar({ collapsed, onCollapse, isMobile }: SidebarProp
             breakpoint="lg"
             width={260}
             collapsedWidth={80}
+            className="sidebar-scroll"
             style={{
                 height: '100vh',
                 position: 'sticky',
                 top: 0,
                 left: 0,
                 backgroundColor: '#1A1A2E',
+                overflowY: 'auto',
+                overflowX: 'hidden',
             }}
         >
             <div style={{ height: 64, display: 'flex', alignItems: 'center', padding: '0 24px', overflow: 'hidden' }}>
