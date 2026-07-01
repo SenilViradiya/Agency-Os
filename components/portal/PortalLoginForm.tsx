@@ -10,7 +10,10 @@ import {
     Button,
     Typography,
     Alert,
-    App as AntdApp
+    App as AntdApp,
+    Modal,
+    Result,
+    Flex
 } from 'antd';
 import { MailOutlined, LockOutlined } from '@ant-design/icons';
 
@@ -21,6 +24,7 @@ export default function PortalLoginForm() {
     const { message: msg } = AntdApp.useApp();
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
+    const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
 
     const onFinish = async (values: any) => {
         setLoading(true);
@@ -134,14 +138,36 @@ export default function PortalLoginForm() {
                     >
                         {loading ? 'Entering Portal...' : 'Sign In'}
                     </Button>
+                    <Flex justify="center" style={{ marginTop: 16 }}>
+                        <Typography.Link
+                            onClick={() => setForgotPasswordOpen(true)}
+                            style={{ fontSize: 13, color: 'var(--text-secondary)' }}
+                        >
+                            Forgot password?
+                        </Typography.Link>
+                    </Flex>
                 </Form.Item>
             </Form>
 
-            <div style={{ textAlign: 'center', marginTop: 16 }}>
-                <Text type="secondary" style={{ fontSize: 12 }}>
-                    Having trouble logging in? Contact your account manager.
-                </Text>
-            </div>
+            <Modal
+                title="Forgot your password?"
+                open={forgotPasswordOpen}
+                onCancel={() => setForgotPasswordOpen(false)}
+                footer={[
+                    <Button key="ok" type="primary" onClick={() => setForgotPasswordOpen(false)}>
+                        OK
+                    </Button>
+                ]}
+                width={400}
+                centered
+                destroyOnHidden
+            >
+                <Result
+                    icon={<LockOutlined style={{ color: 'var(--text-secondary)' }} />}
+                    title="Contact your account manager"
+                    subTitle="Reach out to your AgencyOS account manager via WhatsApp or phone and they will reset your access within minutes."
+                />
+            </Modal>
         </Card>
     );
 }

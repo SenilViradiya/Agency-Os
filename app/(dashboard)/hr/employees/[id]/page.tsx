@@ -7,16 +7,18 @@ import {
 import {
     ArrowLeftOutlined, EditOutlined, PhoneOutlined, MailOutlined, WhatsAppOutlined,
     CalendarOutlined, UserOutlined, CheckCircleOutlined, CloseCircleOutlined,
-    ClockCircleOutlined, DollarOutlined, TrophyOutlined,
+    ClockCircleOutlined, DollarOutlined, TrophyOutlined, LockOutlined,
 } from '@ant-design/icons';
 import PageHeader from '@/components/shared/PageHeader';
 import EmployeeDrawer from '@/components/hr/employees/EmployeeDrawer';
 import AttendanceCalendar from '@/components/hr/attendance/AttendanceCalendar';
 import MarkAttendanceModal from '@/components/hr/attendance/MarkAttendanceModal';
+import ResetPasswordModal from '@/components/shared/ResetPasswordModal';
 import { useSession } from 'next-auth/react';
 import apiClient from '@/lib/apiClient';
 import { useRouter, useParams } from 'next/navigation';
 import dayjs from 'dayjs';
+
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -45,8 +47,13 @@ export default function EmployeeDetailPage() {
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [markAttendanceOpen, setMarkAttendanceOpen] = useState(false);
     const [selectedMonth, setSelectedMonth] = useState(dayjs().format('YYYY-MM'));
+    const [resetModalOpen, setResetModalOpen] = useState(false);
 
     const isManager = session?.user && ((session.user as any).role === 'Super Admin' || (session.user as any).role === 'Manager');
+    const currentUserRole = (session?.user as any)?.role;
+    const isSelf = employee?.userId && (((employee.userId as any)._id || (employee.userId as any)) === session?.user?.id);
+    const targetIsSuperAdmin = (employee?.userId as any)?.role?.name === 'Super Admin' || (employee?.userId as any)?.role === 'Super Admin';
+    const isResetDisabled = isSelf || (currentUserRole === 'Manager' && targetIsSuperAdmin);
 
     const fetchEmployee = useCallback(async () => {
         setLoading(true);
@@ -152,9 +159,19 @@ export default function EmployeeDetailPage() {
                         </div>
                     </Flex>
                     {isManager && (
-                        <Button icon={<EditOutlined />} type="primary" onClick={() => { setDrawerOpen(true); }}>
-                            Edit Profile
-                        </Button>
+                        <Space>
+                            <Button 
+                                icon={<LockOutlined />} 
+                                danger
+                                disabled={isResetDisabled}
+                                onClick={() => setResetModalOpen(true)}
+                            >
+                                Reset Password
+                            </Button>
+                            <Button icon={<EditOutlined />} type="primary" onClick={() => { setDrawerOpen(true); }}>
+                                Edit Profile
+                            </Button>
+                        </Space>
                     )}
                 </Flex>
             </Card>
@@ -383,6 +400,17 @@ export default function EmployeeDetailPage() {
                 employeeName={employee.fullName}
                 onSuccess={() => { fetchAttendance(); fetchEmployee(); }}
             />
+
+            {employee?.userId && (
+                <ResetPasswordModal
+                    open={resetModalOpen}
+                    onClose={() => setResetModalOpen(false)}
+                    userId={(employee.userId as any)._id || (employee.userId as any)}
+                    userName={employee.fullName}
+                    apiEndpoint="/api/users/[id]/reset-password"
+                    context="team"
+                />
+            )}
         </div>
     );
 }
