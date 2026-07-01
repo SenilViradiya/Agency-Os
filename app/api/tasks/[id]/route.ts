@@ -118,7 +118,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
        }
     }
 
-    const updatedTask = await Task.findByIdAndUpdate(id, body, { new: true });
+    const updatedTask = await Task.findByIdAndUpdate(id, body, { returnDocument: 'after' });
 
     return NextResponse.json({ success: true, data: updatedTask });
   } catch (error: any) {

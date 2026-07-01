@@ -91,22 +91,37 @@ export function TasksContent() {
     };
 
     const handleStatusChange = async (taskId: string, newStatus: string) => {
+        const prevTasks = [...tasks];
+        // Optimistically update status locally
+        setTasks(prev => prev.map(t => t._id === taskId ? { ...t, status: newStatus } : t));
+
         try {
             const res = await apiClient.put(`/tasks/${taskId}`, { status: newStatus });
             if (res.data.success) {
-                fetchTasks();
+                const updatedTask = res.data.data;
+                if (updatedTask) {
+                    setTasks(prev => prev.map(t => t._id === taskId ? updatedTask : t));
+                }
+            } else {
+                setTasks(prevTasks);
+                message.error('Update failed');
             }
         } catch (error) {
+            setTasks(prevTasks);
             message.error('Update failed');
         }
     };
 
     const handleDeleteTask = async (id: string) => {
+        const prevTasks = [...tasks];
+        // Optimistically delete task
+        setTasks(prev => prev.filter(t => t._id !== id));
+
         try {
             await apiClient.delete(`/tasks/${id}`);
             message.success('Task deleted');
-            fetchTasks();
         } catch (error: any) {
+            setTasks(prevTasks);
             message.error(error.response?.data?.error || 'Delete failed');
         }
     };
