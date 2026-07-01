@@ -27,6 +27,7 @@ import {
 import { usePathname, useRouter } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
 import apiClient from '@/lib/apiClient';
+import { hasPermission } from '@/lib/rbac';
 
 const { Sider } = Layout;
 const { Text, Title } = Typography;
@@ -174,7 +175,42 @@ export default function Sidebar({ collapsed, onCollapse, isMobile }: SidebarProp
         ]},
     ];
 
-    const filteredItems = menuItems;
+    const filteredItems = menuItems
+        .map(group => {
+            const filteredChildren = group.children?.filter(item => {
+                let moduleName: string | null = null;
+                if (item.key === '/dashboard') return true;
+                if (item.key === '/leads') moduleName = 'leads';
+                if (item.key === '/clients') moduleName = 'clients';
+                if (item.key === '/clients/portal-access') moduleName = 'clients';
+                if (item.key === '/projects') moduleName = 'projects';
+                if (item.key === '/tasks') moduleName = 'tasks';
+                if (item.key === '/content') moduleName = 'content';
+                if (item.key === '/approvals') moduleName = 'approvals';
+                if (item.key === '/publishing') moduleName = 'publishing';
+                if (item.key === '/analytics') moduleName = 'analytics';
+                if (item.key === '/hr') moduleName = 'hr';
+                if (item.key === '/hr/employees') moduleName = 'hr';
+                if (item.key === '/hr/attendance') moduleName = 'hr';
+                if (item.key === '/hr/leaves') moduleName = 'hr';
+                if (item.key === '/hr/payroll') moduleName = 'hr';
+                if (item.key === '/hr/performance') moduleName = 'hr';
+                if (item.key === '/hr/announcements') moduleName = 'hr';
+                if (item.key === '/finance') moduleName = 'finance';
+                if (item.key === '/users') moduleName = 'users';
+                if (item.key === '/roles') moduleName = 'roles';
+                
+                if (!moduleName) return true;
+                return hasPermission(session?.user, moduleName, 'read');
+            });
+            
+            return {
+                ...group,
+                children: filteredChildren,
+            };
+        })
+        .filter(group => group.children && group.children.length > 0);
+
 
     const comingSoonItems = [
         { key: 'meetings', label: 'Meetings', icon: <MeetingsIcon />, disabled: true },
