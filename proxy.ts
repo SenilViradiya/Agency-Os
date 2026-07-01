@@ -1,6 +1,9 @@
-import { auth } from "./lib/auth";
+import NextAuth from "next-auth";
+import { authConfig } from "./lib/auth.config";
 import { NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
+
+const { auth } = NextAuth(authConfig);
 
 export const proxy = auth(async (req) => {
   const { nextUrl } = req;
