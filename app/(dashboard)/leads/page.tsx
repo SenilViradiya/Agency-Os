@@ -30,7 +30,7 @@ const { Text } = Typography;
 const { Option } = Select;
 
 export default function LeadsPage() {
-    const { modal } = App.useApp();
+    const { modal, message } = App.useApp();
     const router = useRouter();
     const [view, setView] = useState<'kanban' | 'list'>('kanban');
     const [leads, setLeads] = useState<any[]>([]);
@@ -90,17 +90,27 @@ export default function LeadsPage() {
     };
 
     const handleUpdateLead = async (id: string, data: any) => {
+        const prevLeads = [...leads];
+        // Optimistically update status and fields locally
+        setLeads(prev => prev.map(lead => lead._id === id ? { ...lead, ...data } : lead));
+
         try {
             const res = await apiClient.put(`/leads/${id}`, data);
             if (res.data.success) {
-                fetchLeads();
+                const updatedLead = res.data.data;
+                // Update local state with latest data from the server
+                setLeads(prev => prev.map(lead => lead._id === id ? updatedLead : lead));
                 if (res.data.needsConversion) {
-                    setSelectedLead(res.data.data);
+                    setSelectedLead(updatedLead);
                     setConvertDialogOpen(true);
                 }
+            } else {
+                setLeads(prevLeads);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Failed to update lead:', error);
+            message.error(error.response?.data?.error || 'Failed to update lead');
+            setLeads(prevLeads);
         }
     };
 
@@ -112,19 +122,49 @@ export default function LeadsPage() {
             okType: 'danger',
             cancelText: 'No',
             onOk: async () => {
+                const prevLeads = [...leads];
+                // Optimistically remove lead
+                setLeads(prev => prev.filter(lead => lead._id !== id));
+                setStats(prev => ({ total: Math.max(0, prev.total - 1) }));
+
                 try {
                     const res = await apiClient.delete(`/leads/${id}`);
-                    if (res.data.success) {
-                        fetchLeads();
+                    if (!res.data.success) {
+                        setLeads(prevLeads);
+                        setStats({ total: prevLeads.length });
                     }
                 } catch (error) {
                     console.error('Failed to delete lead:', error);
+                    setLeads(prevLeads);
+                    setStats({ total: prevLeads.length });
                 }
             }
         });
     };
 
     const handleStatusChange = (leadId: string, newStatus: string) => {
+        if (newStatus === 'lost') {
+            modal.confirm({
+                title: 'Specify Reason for Loss',
+                content: (
+                    <div style={{ marginTop: 12 }}>
+                        <p style={{ marginBottom: 8 }}>Why was this lead lost? Please provide a brief reason:</p>
+                        <Input id="lost-reason-input" placeholder="e.g. Budget too low, Competitor selected" />
+                    </div>
+                ),
+                okText: 'Mark Lost',
+                cancelText: 'Cancel',
+                onOk: async () => {
+                    const inputEl = document.getElementById('lost-reason-input') as HTMLInputElement;
+                    const lostReason = inputEl?.value || 'No reason provided';
+                    await handleUpdateLead(leadId, { status: 'lost', lostReason });
+                },
+                onCancel: () => {
+                    fetchLeads(); // snap card back to original position
+                }
+            });
+            return;
+        }
         handleUpdateLead(leadId, { status: newStatus });
     };
 

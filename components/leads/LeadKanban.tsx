@@ -11,6 +11,7 @@ import {
     useSensors,
     DragStartEvent,
     DragEndEvent,
+    useDroppable,
 } from '@dnd-kit/core';
 import {
     arrayMove,
@@ -37,6 +38,21 @@ interface LeadKanbanProps {
     leads: any[];
     onStatusChange: (leadId: string, newStatus: string) => void;
     onCardClick: (lead: any) => void;
+}
+
+interface ColumnDroppableProps {
+    id: string;
+    children: React.ReactNode;
+    style?: React.CSSProperties;
+}
+
+function ColumnDroppable({ id, children, style }: ColumnDroppableProps) {
+    const { setNodeRef } = useDroppable({ id });
+    return (
+        <div ref={setNodeRef} style={style}>
+            {children}
+        </div>
+    );
 }
 
 export default function LeadKanban({ leads, onStatusChange, onCardClick }: LeadKanbanProps) {
@@ -129,7 +145,10 @@ export default function LeadKanban({ leads, onStatusChange, onCardClick }: LeadK
                                 items={groupedLeads[column.id].map((l: any) => l._id)}
                                 strategy={verticalListSortingStrategy}
                             >
-                                <div style={{ minHeight: 100 }}>
+                                <ColumnDroppable 
+                                    id={column.id}
+                                    style={{ minHeight: 'calc(100vh - 340px)', display: 'flex', flexDirection: 'column', gap: 4 }}
+                                >
                                     {groupedLeads[column.id].map((lead: any) => (
                                         <LeadCard
                                             key={lead._id}
@@ -137,7 +156,7 @@ export default function LeadKanban({ leads, onStatusChange, onCardClick }: LeadK
                                             onClick={onCardClick}
                                         />
                                     ))}
-                                </div>
+                                </ColumnDroppable>
                             </SortableContext>
                         </Card>
                     </div>

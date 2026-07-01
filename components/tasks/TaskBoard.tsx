@@ -11,6 +11,7 @@ import {
     useSensors,
     DragStartEvent,
     DragEndEvent,
+    useDroppable,
 } from '@dnd-kit/core';
 import {
     SortableContext,
@@ -33,6 +34,21 @@ interface TaskBoardProps {
     tasks: any[];
     onStatusChange: (taskId: string, newStatus: string) => void;
     onTaskClick: (task: any) => void;
+}
+
+interface ColumnDroppableProps {
+    id: string;
+    children: React.ReactNode;
+    style?: React.CSSProperties;
+}
+
+function ColumnDroppable({ id, children, style }: ColumnDroppableProps) {
+    const { setNodeRef } = useDroppable({ id });
+    return (
+        <div ref={setNodeRef} style={style}>
+            {children}
+        </div>
+    );
 }
 
 export default function TaskBoard({ tasks, onStatusChange, onTaskClick }: TaskBoardProps) {
@@ -122,7 +138,10 @@ export default function TaskBoard({ tasks, onStatusChange, onTaskClick }: TaskBo
                                 items={groupedTasks[column.id].map((t: any) => t._id)}
                                 strategy={verticalListSortingStrategy}
                             >
-                                <div style={{ minHeight: 100 }}>
+                                <ColumnDroppable 
+                                    id={column.id}
+                                    style={{ minHeight: 'calc(100vh - 380px)', display: 'flex', flexDirection: 'column', gap: 4 }}
+                                >
                                     {groupedTasks[column.id].map((task: any) => (
                                         <TaskCard
                                             key={task._id}
@@ -130,7 +149,7 @@ export default function TaskBoard({ tasks, onStatusChange, onTaskClick }: TaskBo
                                             onClick={onTaskClick}
                                         />
                                     ))}
-                                </div>
+                                </ColumnDroppable>
                             </SortableContext>
                         </Card>
                     </div>
