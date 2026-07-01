@@ -30,6 +30,8 @@ import {
 import StatusChip from '@/components/shared/StatusChip';
 import dayjs from 'dayjs';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+import ClientPortalAccessTable from './ClientPortalAccessTable';
 
 const { Title, Text, Link } = Typography;
 
@@ -191,6 +193,17 @@ export default function ClientDetailView({ client, onEdit }: ClientDetailViewPro
         { key: '2', label: 'Projects', children: projectsContent },
         { key: '3', label: 'Activity', children: <div style={{ padding: 40, textAlign: 'center' }}><Text type="secondary">Activity coming soon...</Text></div> },
     ];
+
+    const { data: session } = useSession();
+    const isManager = session?.user && ((session.user as any).role === 'Super Admin' || (session.user as any).role === 'Manager');
+
+    if (isManager) {
+        tabItems.push({
+            key: '4',
+            label: 'Portal Access',
+            children: <ClientPortalAccessTable clientId={client._id} />
+        });
+    }
 
     return (
         <div>

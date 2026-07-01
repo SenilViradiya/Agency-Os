@@ -10,7 +10,9 @@ import {
     Button,
     Typography,
     Alert,
-    Flex
+    Flex,
+    Modal,
+    Result
 } from 'antd';
 import { MailOutlined, LockOutlined } from '@ant-design/icons';
 
@@ -20,6 +22,7 @@ export default function LoginForm() {
     const router = useRouter();
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
+    const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
 
     const onFinish = async (values: any) => {
         setLoading(true);
@@ -120,8 +123,36 @@ export default function LoginForm() {
                     >
                         {loading ? 'Signing In...' : 'Sign In'}
                     </Button>
+                    <Flex justify="center" style={{ marginTop: 16 }}>
+                        <Typography.Link
+                            onClick={() => setForgotPasswordOpen(true)}
+                            style={{ fontSize: 13, color: 'var(--text-secondary)' }}
+                        >
+                            Forgot password?
+                        </Typography.Link>
+                    </Flex>
                 </Form.Item>
             </Form>
+
+            <Modal
+                title="Forgot your password?"
+                open={forgotPasswordOpen}
+                onCancel={() => setForgotPasswordOpen(false)}
+                footer={[
+                    <Button key="ok" type="primary" onClick={() => setForgotPasswordOpen(false)}>
+                        OK
+                    </Button>
+                ]}
+                width={400}
+                centered
+                destroyOnHidden
+            >
+                <Result
+                    icon={<LockOutlined style={{ color: 'var(--text-secondary)' }} />}
+                    title="Contact your manager"
+                    subTitle="Ask your manager or Super Admin to reset your password from the Users or Employees section."
+                />
+            </Modal>
         </Card>
     );
 }

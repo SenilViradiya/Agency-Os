@@ -240,7 +240,7 @@ export default function PortalAccessPage() {
                 okText={editingUser ? 'Update Credentials' : 'Create Access'}
                 confirmLoading={modalLoading}
                 onOk={() => form.submit()}
-                destroyOnClose
+                destroyOnHidden
             >
                 <div style={{ padding: '12px 0' }}>
                     <Form
