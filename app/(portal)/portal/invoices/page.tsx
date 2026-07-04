@@ -20,7 +20,7 @@ export default function PortalInvoicesPage() {
     useEffect(() => {
         setLoading(true);
         // We will load status parameter from endpoint in frontend filtering
-        apiClient.get('/api/portal/invoices')
+        apiClient.get('/portal/invoices')
             .then(res => {
                 if (res.data?.success) {
                     setInvoices(res.data.data);

@@ -32,7 +32,7 @@ const { Option } = Select;
 export default function LeadsPage() {
     const { modal, message } = App.useApp();
     const router = useRouter();
-    const [view, setView] = useState<'kanban' | 'list'>('kanban');
+    const [view, setView] = useState<'kanban' | 'list'>('list');
     const [leads, setLeads] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [drawerOpen, setDrawerOpen] = useState(false);

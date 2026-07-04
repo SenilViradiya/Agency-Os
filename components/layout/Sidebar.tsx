@@ -81,9 +81,9 @@ export default function Sidebar({ collapsed, onCollapse, isMobile }: SidebarProp
 
     const handleLogout = async () => {
         await signOut({
-            callbackUrl: '/login',
-            redirect: true,
+            redirect: false,
         });
+        window.location.href = '/login';
     };
 
     const handleLogoutClick = () => {
@@ -277,7 +277,7 @@ export default function Sidebar({ collapsed, onCollapse, isMobile }: SidebarProp
                 style={{ backgroundColor: 'transparent', borderRight: 0, opacity: 0.5 }}
             />
 
-            <div style={{ marginTop: 'auto', padding: '16px' }}>
+            <div style={{ marginTop: 'auto', padding: '16px 16px 56px 16px' }}>
                 <Tooltip title="Log Out" placement="right" open={collapsed ? undefined : false}>
                     <div 
                         onClick={handleLogoutClick}

@@ -8,7 +8,6 @@ const { auth } = NextAuth(authConfig);
 export const proxy = auth(async (req) => {
   const { nextUrl } = req;
   const pathname = nextUrl.pathname;
-  const secret = process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET;
 
   // 1. Client Portal Route protection
   if (pathname.startsWith('/portal') || pathname === '/portal-login') {
@@ -19,13 +18,38 @@ export const proxy = auth(async (req) => {
       return NextResponse.next();
     }
 
-    // Attempt to read the portal token
-    const portalToken = await getToken({
-      req,
-      secret,
-      salt: 'portal-session-token',
-      cookieName: 'portal-session-token',
-    });
+    // Attempt to read the portal token with AUTH_SECRET first, fallback to NEXTAUTH_SECRET
+    let portalToken = null;
+    const authSecret = process.env.AUTH_SECRET;
+    const nextAuthSecret = process.env.NEXTAUTH_SECRET;
+
+    if (authSecret) {
+      try {
+        portalToken = await getToken({
+          req,
+          secret: authSecret,
+          salt: 'portal-session-token',
+          cookieName: 'portal-session-token',
+        });
+      } catch (err) {
+        // Ignore and fallback
+      }
+    }
+
+    if (!portalToken && nextAuthSecret) {
+      try {
+        portalToken = await getToken({
+          req,
+          secret: nextAuthSecret,
+          salt: 'portal-session-token',
+          cookieName: 'portal-session-token',
+        });
+      } catch (err) {
+        // Ignore
+      }
+    }
+
+    console.log('[PROXY-PORTAL] Path:', pathname, 'portalToken parsed:', !!portalToken);
 
     if (isLoginPage) {
       if (portalToken) {
@@ -42,7 +66,7 @@ export const proxy = auth(async (req) => {
   }
 
   // 2. Internal Dashboard Route protection (existing checks)
-  const isLoggedIn = !!req.auth;
+  const isLoggedIn = !!req.auth?.user;
   console.log('[PROXY] URL:', nextUrl.pathname, '| LoggedIn:', isLoggedIn);
 
   const isApiRoute = nextUrl.pathname.startsWith("/api");

@@ -19,7 +19,7 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
 
   const fetchProfile = async () => {
     try {
-      const res = await apiClient.get('/api/portal/me');
+      const res = await apiClient.get('/portal/me');
       if (res.data?.success) {
         setClient(res.data.data.client);
         setUser(res.data.data.user);

@@ -21,8 +21,8 @@ export default function PortalContentCalendarPage() {
     useEffect(() => {
         setLoading(true);
         Promise.all([
-            apiClient.get('/api/portal/projects'),
-            apiClient.get('/api/portal/content')
+            apiClient.get('/portal/projects'),
+            apiClient.get('/portal/content')
         ])
         .then(([projectsRes, contentRes]) => {
             if (projectsRes.data?.success) setProjects(projectsRes.data.data);

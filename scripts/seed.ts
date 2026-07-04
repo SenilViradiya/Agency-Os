@@ -17,6 +17,7 @@ import Payment from '../models/Payment';
 import Expense from '../models/Expense';
 import Vendor from '../models/Vendor';
 import VendorBill from '../models/VendorBill';
+import ClientPortalUser from '../models/ClientPortalUser';
 
 dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 
@@ -52,6 +53,13 @@ const defaultRoles = [
       actions: ['read', 'update']
     }))
   },
+  {
+    name: 'Viewer', slug: 'viewer', isSystem: true,
+    permissions: modules.map(m => ({
+      module: m,
+      actions: ['read']
+    }))
+  },
 ];
 
 async function seed() {
@@ -75,6 +83,7 @@ async function seed() {
     await Expense.deleteMany({ organizationId: ORGANIZATION_ID });
     await Vendor.deleteMany({ organizationId: ORGANIZATION_ID });
     await VendorBill.deleteMany({ organizationId: ORGANIZATION_ID });
+    await ClientPortalUser.deleteMany({ organizationId: ORGANIZATION_ID });
     console.log('Collections cleared');
 
     // 1. Seed Roles
@@ -126,6 +135,19 @@ async function seed() {
         password,
         organizationId: ORGANIZATION_ID,
         role: roleMap['editor'],
+        status: 'active',
+      },
+      { upsert: true, new: true }
+    );
+
+    const viewerUser = await User.findOneAndUpdate(
+      { organizationId: ORGANIZATION_ID, email: 'viewer@agencyos.com' },
+      {
+        name: 'Sam Viewer',
+        email: 'viewer@agencyos.com',
+        password,
+        organizationId: ORGANIZATION_ID,
+        role: roleMap['viewer'],
         status: 'active',
       },
       { upsert: true, new: true }
@@ -197,6 +219,23 @@ async function seed() {
     );
 
     console.log('Clients seeded');
+
+    // Seed Client Portal User
+    const clientPassword = await bcrypt.hash('Client@123', 12);
+    await ClientPortalUser.findOneAndUpdate(
+      { organizationId: ORGANIZATION_ID, email: 'client@samplebrand.com' },
+      {
+        name: 'Portal Client',
+        email: 'client@samplebrand.com',
+        password: clientPassword,
+        clientId: client1._id,
+        status: 'active',
+        organizationId: ORGANIZATION_ID,
+        createdBy: adminUser._id,
+      },
+      { upsert: true, new: true }
+    );
+    console.log('Client Portal Users seeded');
 
     // 4. Seed Projects
     const project1 = await Project.findOneAndUpdate(
