@@ -22,8 +22,8 @@ export default function PortalProjectDetail({ id }: PortalProjectDetailProps) {
     useEffect(() => {
         setLoading(true);
         Promise.all([
-            apiClient.get(`/api/portal/projects/${id}`),
-            apiClient.get(`/api/portal/content?projectId=${id}`),
+            apiClient.get(`/portal/projects/${id}`),
+            apiClient.get(`/portal/content?projectId=${id}`),
         ])
         .then(([projectRes, contentRes]) => {
             if (projectRes.data?.success) {

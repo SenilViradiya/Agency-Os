@@ -17,7 +17,7 @@ export default function PortalProjectsPage() {
 
     useEffect(() => {
         setLoading(true);
-        apiClient.get('/api/portal/projects')
+        apiClient.get('/portal/projects')
             .then(res => {
                 if (res.data?.success) {
                     setProjects(res.data.data);

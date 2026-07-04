@@ -56,9 +56,9 @@ export default function PortalDashboard() {
     useEffect(() => {
         setLoading(true);
         Promise.all([
-            apiClient.get('/api/portal/projects'),
-            apiClient.get('/api/portal/content'),
-            apiClient.get('/api/portal/invoices')
+            apiClient.get('/portal/projects'),
+            apiClient.get('/portal/content'),
+            apiClient.get('/portal/invoices')
         ]).then(([projectsRes, contentRes, invoicesRes]) => {
             if (projectsRes.data?.success) setProjects(projectsRes.data.data);
             if (contentRes.data?.success) setContent(contentRes.data.data);

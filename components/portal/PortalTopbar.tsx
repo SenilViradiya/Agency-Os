@@ -19,9 +19,9 @@ export default function PortalTopbar({ collapsed, onToggle }: PortalTopbarProps)
 
     const handleLogout = async () => {
         await signOut({
-            callbackUrl: '/portal-login',
-            redirect: true,
+            redirect: false,
         });
+        window.location.href = '/portal-login';
     };
 
     const handleLogoutClick = () => {

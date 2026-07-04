@@ -32,13 +32,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             model: Role
           });
           
-          if (!user || !user.password) {
+          if (!user) {
+            console.log('[AUTH] User not found for:', email);
+            return null;
+          }
+          if (!user.password) {
+            console.log('[AUTH] User has no password in DB');
             return null;
           }
 
           const isValid = await bcrypt.compare(creds.password as string, user.password);
+          console.log('[AUTH] Password check outcome:', isValid, 'User status:', user.status);
           
           if (!isValid || user.status !== 'active') {
+            console.log('[AUTH] Denied access due to status or password failure');
             return null;
           }
 

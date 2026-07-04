@@ -1,6 +1,7 @@
 import type { NextAuthConfig } from 'next-auth';
 
 export const authConfig = {
+  trustHost: true,
   providers: [], // Empty here, filled in auth.ts for Edge compatibility
   callbacks: {
     async jwt({ token, user }) {
@@ -10,6 +11,7 @@ export const authConfig = {
         token.role = user.role;
         token.permissions = user.permissions;
       }
+
       return token;
     },
     async session({ session, token }) {
@@ -19,6 +21,7 @@ export const authConfig = {
         (session.user as any).role = token.role;
         (session.user as any).permissions = token.permissions;
       }
+
       return session;
     },
   },

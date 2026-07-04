@@ -20,7 +20,7 @@ export default function PortalContentDetail({ id }: PortalContentDetailProps) {
 
     useEffect(() => {
         setLoading(true);
-        apiClient.get(`/api/portal/content/${id}`)
+        apiClient.get(`/portal/content/${id}`)
             .then(res => {
                 if (res.data?.success) {
                     setContent(res.data.data);

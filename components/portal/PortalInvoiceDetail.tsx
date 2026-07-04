@@ -20,7 +20,7 @@ export default function PortalInvoiceDetail({ id }: PortalInvoiceDetailProps) {
 
     useEffect(() => {
         setLoading(true);
-        apiClient.get(`/api/portal/invoices/${id}`)
+        apiClient.get(`/portal/invoices/${id}`)
             .then(res => {
                 if (res.data?.success) {
                     setInvoiceData(res.data.data);
